@@ -1,30 +1,37 @@
 const fs = require("fs");
+const { pipeline } = require("stream");
 const yargs = require("yargs");
-const { parseFile } = require("fast-csv");
+const { parseFile, format } = require("fast-csv");
 
-function transformFile(filePath, rowTransformer) {
+function transformFile(filePath) {
   return new Promise((resolve, reject) => {
-    const results = [];
-    parseFile(filePath, { headers: true })
-      .on("error", (error) => reject(error))
-      .on("data", (row) => {
-        const transformedRow = rowTransformer(row);
-        if (transformedRow) {
-          results.push(transformedRow);
+    pipeline(
+      parseFile(filePath, { headers: true }),
+      format({ transform: transformRow, headers: true }),
+      fs.createWriteStream(filePath + "transform.csv"),
+      (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
         }
-      })
-      .on("end", () => resolve(results));
+      }
+    );
   });
 }
 
 function transformRow(row) {
-  return row.url;
+  const payload = JSON.parse(row.payload);
+  return {
+    url: row.url,
+    firstContentfulPaint:
+      payload["_lighthouse.Performance.first-contentful-paint"],
+  };
 }
 
-const firstArgument = yargs.argv._[0];
+const filePath = yargs.argv._[0];
 
 console.time("transform");
-transformFile(firstArgument, transformRow).then((results) => {
-  console.log(results.length);
+transformFile(filePath).then(() => {
   console.timeEnd("transform");
 });
