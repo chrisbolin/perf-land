@@ -26,7 +26,7 @@ function transformRow(row) {
   return {
     // basics
     url: row.url,
-    rank: row.rank,
+    rank: row.rank2017,
     startedDateTime: row.startedDateTime,
     // site info
     cdn: row.cdn,
