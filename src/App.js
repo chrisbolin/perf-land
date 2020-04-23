@@ -23,11 +23,19 @@ const presets = {
     "www.bbc.co.uk",
     "www.aljazeera.com",
   ],
-  socialMedia: [
+  "social media": [
     "twitter.com",
     "m.facebook.com",
     "www.instagram.com",
     "www.pinterest.com",
+  ],
+  lululemon: [
+    "www.target.com",
+    "shop.lululemon.com",
+    "www.nike.com",
+    "shop.nordstrom.com",
+    "www.amazon.com",
+    "www.mercadolivre.com.br",
   ],
 };
 
@@ -124,7 +132,7 @@ function Chart({
           style={{
             data: {
               fill: ({ datum }) =>
-                datum.x === highlightedUrl ? "red" : undefined,
+                datum.x === highlightedUrl ? "blue" : undefined,
             },
           }}
         />
@@ -213,7 +221,7 @@ function App() {
             defaultOptions={[]}
             onChange={(option) => addUrl(option.value)}
             value=""
-            placeholder="Add websites..."
+            placeholder="Add website..."
           />
           {currentlySelectedRecords.map((record) => (
             <SelectedRecord
@@ -228,13 +236,11 @@ function App() {
           <button onClick={removeAllUrls}>clear</button>
           <div>
             <b>presets:</b>
-            <button onClick={() => selectPresetUrls("airlines")}>
-              airlines
-            </button>
-            <button onClick={() => selectPresetUrls("news")}>news</button>
-            <button onClick={() => selectPresetUrls("socialMedia")}>
-              social media
-            </button>
+            {Object.keys(presets).map((presetKey) => (
+              <button onClick={() => selectPresetUrls(presetKey)}>
+                {presetKey}
+              </button>
+            ))}
           </div>
         </div>
       )}
