@@ -19,3 +19,7 @@
 .charts {
   column-width: 400px;
 }
+
+::selection {
+  background: yellow;
+}

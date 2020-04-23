@@ -185,6 +185,16 @@ function App() {
 
   return (
     <div className="App">
+      <h1>performance comparison</h1>
+      <p>
+        <ul>
+          <li>note: this is a demo. be aware of sharp edges</li>
+          <li>select some websites to compare</li>
+          <li>or pick a preset group of sites</li>
+          <li>most of the top 20,000 sites are here</li>
+          <li>there will definitely be some sites missing! let Chris know</li>
+        </ul>
+      </p>
       <h1>websites</h1>
       <AsyncSelect
         className="UrlSelect"
