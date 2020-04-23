@@ -69,13 +69,20 @@ function Record({
   );
 }
 
-function Chart({ records, field, name, highlightedUrl, reverse = false }) {
+function Chart({
+  records,
+  field,
+  name,
+  highlightedUrl,
+  reverse = false,
+  yTransform = (x) => x,
+}) {
   if (!records.length) return null;
 
   const data = records
     .map((record) => ({
       x: record.url,
-      y: parseFloat(record[field]) || 0,
+      y: yTransform(parseFloat(record[field])) || 0,
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
 
@@ -237,6 +244,20 @@ function App() {
           field="performanceScore"
           highlightedUrl={highlightedUrl}
           reverse
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="JavaScript payload (kB)"
+          field="bytesJS"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="Image payload (kB)"
+          field="bytesImg"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
         />
       </div>
     </div>
