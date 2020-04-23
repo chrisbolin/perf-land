@@ -17,21 +17,21 @@ const presets = {
     "www.flyfrontier.com",
   ],
   news: [
+    "www.aljazeera.com",
     "www.latimes.com",
     "app.nytimes.com",
     "www.theatlantic.com",
     "www.bbc.co.uk",
-    "www.aljazeera.com",
   ],
   "social media": [
-    "twitter.com",
     "m.facebook.com",
+    "twitter.com",
     "www.instagram.com",
     "www.pinterest.com",
   ],
   lululemon: [
-    "www.target.com",
     "shop.lululemon.com",
+    "www.target.com",
     "www.nike.com",
     "shop.nordstrom.com",
     "www.amazon.com",
@@ -153,7 +153,6 @@ function App() {
       const urls = Object.keys(records);
       setUrls(urls);
       selectPresetUrls("airlines");
-      changeHighlightUrl(presets.airlines[0]);
     });
   }, []);
 
@@ -187,8 +186,11 @@ function App() {
 
   const removeAllUrls = () => setSelectedUrls(new Set());
 
-  const selectPresetUrls = (presetName) =>
-    setSelectedUrls(new Set(presets[presetName]));
+  const selectPresetUrls = (presetName) => {
+    const presetUrls = presets[presetName];
+    setSelectedUrls(new Set(presetUrls));
+    changeHighlightUrl(presetUrls[0]);
+  };
 
   const changeHighlightUrl = (url) =>
     setUiState((uiState) => ({ ...uiState, highlightedUrl: url }));
