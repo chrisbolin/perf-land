@@ -25,9 +25,20 @@ function getUrlMatches(searchString, urls) {
   return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
 }
 
+function Item({ url, onRemove }) {
+  return (
+    <div className="Item">
+      {url}
+      <button onClick={() => onRemove(url)}>X</button>
+    </div>
+  );
+}
+
 function App() {
   const [records, setRecords] = useState({});
   const [urls, setUrls] = useState([]);
+  const [selectedUrls, setSelectedUrls] = useState(new Set());
+
   useEffect(() => {
     downloadRecords().then((records) => {
       setRecords(records);
@@ -35,7 +46,6 @@ function App() {
       setUrls(urls);
     });
   }, []);
-  window.records = records;
 
   const loadOptions = (inputValue, callback) => {
     const MIN_INPUT = 3;
@@ -51,10 +61,33 @@ function App() {
     }
   };
 
+  const addUrl = (url) =>
+    setSelectedUrls((current) => {
+      const next = new Set(current);
+      next.add(url);
+      return next;
+    });
+
+  const removeUrl = (url) =>
+    setSelectedUrls((current) => {
+      const next = new Set(current);
+      next.delete(url);
+      return next;
+    });
+
   return (
     <div className="App">
-      <h2>{urls.length}</h2>
-      <AsyncSelect loadOptions={loadOptions} defaultOptions={[]} />
+      <AsyncSelect
+        className="UrlSelect"
+        loadOptions={loadOptions}
+        defaultOptions={[]}
+        onChange={(option) => addUrl(option.value)}
+        value=""
+        placeholder="Add websites..."
+      />
+      {Array.from(selectedUrls.keys()).map((url) => (
+        <Item key={url} url={url} onRemove={removeUrl} />
+      ))}
     </div>
   );
 }
