@@ -107,7 +107,7 @@ function Chart({
         <VictoryAxis
           label={name}
           tickLabelComponent={
-            <VictoryLabel angle={-90} textAnchor="left" dy={10} dx={10} />
+            <VictoryLabel angle={-90} textAnchor="left" dy={10} dx={12} />
           }
         />
         <VictoryAxis dependentAxis />
