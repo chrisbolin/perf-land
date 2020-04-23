@@ -204,33 +204,40 @@ function App() {
         </ul>
       </p>
       <h1>websites</h1>
-      <AsyncSelect
-        className="UrlSelect"
-        loadOptions={loadOptions}
-        defaultOptions={[]}
-        onChange={(option) => addUrl(option.value)}
-        value=""
-        placeholder="Add websites..."
-      />
-      {currentlySelectedRecords.map((record) => (
-        <SelectedRecord
-          key={record.url}
-          record={record}
-          onRemoveClick={() => removeUrl(record.url)}
-          highlighted={record.url === highlightedUrl}
-          onHighlightClick={() => changeHighlightUrl(record.url)}
-          onHighlightRemoveClick={removeHighlightUrl}
-        />
-      ))}
-      <button onClick={removeAllUrls}>clear</button>
-      <div>
-        <b>presets:</b>
-        <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
-        <button onClick={() => selectPresetUrls("news")}>news</button>
-        <button onClick={() => selectPresetUrls("socialMedia")}>
-          social media
-        </button>
-      </div>
+      {!urls.length && <p>loading...</p>}
+      {!!urls.length && (
+        <div>
+          <AsyncSelect
+            className="UrlSelect"
+            loadOptions={loadOptions}
+            defaultOptions={[]}
+            onChange={(option) => addUrl(option.value)}
+            value=""
+            placeholder="Add websites..."
+          />
+          {currentlySelectedRecords.map((record) => (
+            <SelectedRecord
+              key={record.url}
+              record={record}
+              onRemoveClick={() => removeUrl(record.url)}
+              highlighted={record.url === highlightedUrl}
+              onHighlightClick={() => changeHighlightUrl(record.url)}
+              onHighlightRemoveClick={removeHighlightUrl}
+            />
+          ))}
+          <button onClick={removeAllUrls}>clear</button>
+          <div>
+            <b>presets:</b>
+            <button onClick={() => selectPresetUrls("airlines")}>
+              airlines
+            </button>
+            <button onClick={() => selectPresetUrls("news")}>news</button>
+            <button onClick={() => selectPresetUrls("socialMedia")}>
+              social media
+            </button>
+          </div>
+        </div>
+      )}
       {!!currentlySelectedRecords.length && <h1>charts</h1>}
       <div className="charts">
         <Chart

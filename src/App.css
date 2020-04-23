@@ -23,3 +23,12 @@
 ::selection {
   background: yellow;
 }
+
+h1 {
+  display: inline-block;
+  background-color: yellow;
+}
+
+button {
+  cursor: pointer !important;
+}
