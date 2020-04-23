@@ -9,9 +9,9 @@ const DATA_PATH = "/dump007.csv";
 
 const presets = {
   airlines: [
+    "www.united.com",
     "www.southwest.com",
     "www.delta.com",
-    "www.united.com",
     "www.jetblue.com",
     "www.alaskaair.com",
     "www.flyfrontier.com",
@@ -153,6 +153,7 @@ function App() {
       const urls = Object.keys(records);
       setUrls(urls);
       selectPresetUrls("airlines");
+      changeHighlightUrl(presets.airlines[0]);
     });
   }, []);
 
@@ -208,7 +209,18 @@ function App() {
           <li>select some websites to compare</li>
           <li>or pick a preset group of sites</li>
           <li>most of the top 20,000 sites are here</li>
-          <li>there will definitely be some sites missing! let Chris know</li>
+          <li>there will definitely be some sites missing! let me know</li>
+          <li>
+            all data is from the HTTP Archive, which is public and free (in all
+            senses)
+          </li>
+          <li>
+            tests are run from a private instance of WebPageTest located in
+            Redwood City, California.{" "}
+            <a href="https://httparchive.org/faq#how-is-the-data-gathered">
+              more info here.
+            </a>
+          </li>
         </ul>
       </p>
       <h1>websites</h1>
@@ -237,7 +249,10 @@ function App() {
           <div>
             <b>presets:</b>
             {Object.keys(presets).map((presetKey) => (
-              <button onClick={() => selectPresetUrls(presetKey)}>
+              <button
+                key={presetKey}
+                onClick={() => selectPresetUrls(presetKey)}
+              >
                 {presetKey}
               </button>
             ))}
