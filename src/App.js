@@ -136,6 +136,7 @@ function App() {
       setRecords(records);
       const urls = Object.keys(records);
       setUrls(urls);
+      selectPresetUrls("airlines");
     });
   }, []);
 
