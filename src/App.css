@@ -11,3 +11,7 @@
 .Record {
   margin: 1em;
 }
+
+.Chart {
+  max-width: 400px;
+}

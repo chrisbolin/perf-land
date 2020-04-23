@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { parse } from "papaparse";
 import { keyBy } from "lodash";
 import AsyncSelect from "react-select/async";
-
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 import "./App.css";
 
 const presets = {
@@ -16,7 +16,7 @@ const presets = {
   ],
   news: [
     "https://www.latimes.com/",
-    "https://www.nytimes.com/",
+    "http://www.nytimes.com/",
     "https://www.theatlantic.com/",
     "https://www.bbc.co.uk/",
     "https://www.aljazeera.com/",
@@ -52,6 +52,29 @@ function Record({ record, onRemoveClick }) {
     <div className="Record">
       {record.url}
       <button onClick={onRemoveClick}>X</button>
+    </div>
+  );
+}
+
+function Chart({ records, field, name }) {
+  if (!records.length) return null;
+
+  return (
+    <div className="Chart">
+      <VictoryChart>
+        <VictoryAxis
+          label={name}
+          tickLabelComponent={
+            <VictoryLabel angle={-90} textAnchor="left" dy={10} dx={10} />
+          }
+        />
+        <VictoryAxis dependentAxis />
+        <VictoryBar
+          data={records}
+          x="url"
+          y={(record) => parseFloat(record[field]) || 0}
+        />
+      </VictoryChart>
     </div>
   );
 }
@@ -130,8 +153,55 @@ function App() {
         <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
         <button onClick={() => selectPresetUrls("news")}>news</button>
       </div>
+      <h1>charts</h1>
+      <Chart
+        records={currentlySelectedRecords}
+        name="Time to First Byte (ms)"
+        field="TTFB"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="First Contentful Paint (ms)"
+        field="firstContentfulPaint"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="First Meaningful Paint (ms)"
+        field="firstMeaningfulPaint"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="First CPU Idle (ms)"
+        field="firstCPUIdle"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="Time to Interactive (ms)"
+        field="timeToInteractive"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="Max Potential First Input Delay (ms)"
+        field="maxPotentialFirstInputDelay"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="Speed Index"
+        field="speedIndex"
+      />
+      <Chart
+        records={currentlySelectedRecords}
+        name="Lighthouse Performance Score"
+        field="performanceScore"
+      />
     </div>
   );
 }
+
+/*
+maxPotentialFirstInputDelay
+speedIndex
+performanceScore
+*/
 
 export default App;
