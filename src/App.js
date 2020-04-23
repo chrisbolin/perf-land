@@ -47,16 +47,29 @@ function selectRecords(records, selectedUrls) {
   return Array.from(selectedUrls.keys()).map((url) => records[url]);
 }
 
-function Record({ record, onRemoveClick }) {
+function Record({
+  record,
+  onRemoveClick,
+  highlighted,
+  onHighlightClick,
+  onHighlightRemoveClick,
+}) {
   return (
-    <div className="Record">
+    <div
+      className="Record"
+      style={{ fontWeight: highlighted ? "bold" : "normal" }}
+    >
       {record.url}
       <button onClick={onRemoveClick}>X</button>
+      {!highlighted && <button onClick={onHighlightClick}>highlight</button>}
+      {highlighted && (
+        <button onClick={onHighlightRemoveClick}>remove highlight</button>
+      )}
     </div>
   );
 }
 
-function Chart({ records, field, name, reverse = false }) {
+function Chart({ records, field, name, highlightedUrl, reverse = false }) {
   if (!records.length) return null;
 
   const data = records
@@ -76,7 +89,15 @@ function Chart({ records, field, name, reverse = false }) {
           }
         />
         <VictoryAxis dependentAxis />
-        <VictoryBar data={data} />
+        <VictoryBar
+          data={data}
+          style={{
+            data: {
+              fill: ({ datum }) =>
+                datum.x === highlightedUrl ? "red" : undefined,
+            },
+          }}
+        />
       </VictoryChart>
     </div>
   );
@@ -86,6 +107,7 @@ function App() {
   const [records, setRecords] = useState({});
   const [urls, setUrls] = useState([]);
   const [selectedUrls, setSelectedUrls] = useState(new Set());
+  const [{ highlightedUrl }, setUiState] = useState({ highlightedUrl: null });
 
   useEffect(() => {
     downloadRecords().then((records) => {
@@ -128,6 +150,12 @@ function App() {
   const selectPresetUrls = (presetName) =>
     setSelectedUrls(new Set(presets[presetName]));
 
+  const changeHighlightUrl = (url) =>
+    setUiState((uiState) => ({ ...uiState, highlightedUrl: url }));
+
+  const removeHighlightUrl = (url) =>
+    setUiState((uiState) => ({ ...uiState, highlightedUrl: null }));
+
   const currentlySelectedRecords = selectRecords(records, selectedUrls);
 
   window.records = records;
@@ -148,6 +176,9 @@ function App() {
           key={record.url}
           record={record}
           onRemoveClick={() => removeUrl(record.url)}
+          highlighted={record.url === highlightedUrl}
+          onHighlightClick={() => changeHighlightUrl(record.url)}
+          onHighlightRemoveClick={removeHighlightUrl}
         />
       ))}
       <button onClick={removeAllUrls}>clear</button>
@@ -157,47 +188,57 @@ function App() {
         <button onClick={() => selectPresetUrls("news")}>news</button>
       </div>
       <h1>charts</h1>
-      <Chart
-        records={currentlySelectedRecords}
-        name="Time to First Byte (ms)"
-        field="TTFB"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="First Contentful Paint (ms)"
-        field="firstContentfulPaint"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="First Meaningful Paint (ms)"
-        field="firstMeaningfulPaint"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="First CPU Idle (ms)"
-        field="firstCPUIdle"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="Time to Interactive (ms)"
-        field="timeToInteractive"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="Max Potential First Input Delay (ms)"
-        field="maxPotentialFirstInputDelay"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="Speed Index"
-        field="speedIndex"
-      />
-      <Chart
-        records={currentlySelectedRecords}
-        name="Lighthouse Performance Score"
-        field="performanceScore"
-        reverse
-      />
+      <div className="charts">
+        <Chart
+          records={currentlySelectedRecords}
+          name="Time to First Byte (ms)"
+          field="TTFB"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="First Contentful Paint (ms)"
+          field="firstContentfulPaint"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="First Meaningful Paint (ms)"
+          field="firstMeaningfulPaint"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="First CPU Idle (ms)"
+          field="firstCPUIdle"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="Time to Interactive (ms)"
+          field="timeToInteractive"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="Max Potential First Input Delay (ms)"
+          field="maxPotentialFirstInputDelay"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="Speed Index"
+          field="speedIndex"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="Lighthouse Performance Score"
+          field="performanceScore"
+          highlightedUrl={highlightedUrl}
+          reverse
+        />
+      </div>
     </div>
   );
 }
