@@ -38,16 +38,20 @@ function downloadRecords() {
   });
 }
 
-function getUrlMatches(searchString, urls) {
+function urlMatches(searchString, urls) {
   const MAX_RESULTS = 100;
   return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
 }
 
-function Item({ url, onRemove }) {
+function selectRecords(records, selectedUrls) {
+  return Array.from(selectedUrls.keys()).map((url) => records[url]);
+}
+
+function Record({ record, onRemoveClick }) {
   return (
-    <div className="Item">
-      {url}
-      <button onClick={() => onRemove(url)}>X</button>
+    <div className="Record">
+      {record.url}
+      <button onClick={onRemoveClick}>X</button>
     </div>
   );
 }
@@ -71,7 +75,7 @@ function App() {
       callback([]);
     } else {
       callback(
-        getUrlMatches(inputValue, urls).map((url) => ({
+        urlMatches(inputValue, urls).map((url) => ({
           value: url,
           label: url,
         }))
@@ -98,11 +102,13 @@ function App() {
   const selectPresetUrls = (presetName) =>
     setSelectedUrls(new Set(presets[presetName]));
 
+  const currentlySelectedRecords = selectRecords(records, selectedUrls);
+
   window.records = records;
 
   return (
     <div className="App">
-      <h2>websites</h2>
+      <h1>websites</h1>
       <AsyncSelect
         className="UrlSelect"
         loadOptions={loadOptions}
@@ -111,12 +117,16 @@ function App() {
         value=""
         placeholder="Add websites..."
       />
-      {Array.from(selectedUrls.keys()).map((url) => (
-        <Item key={url} url={url} onRemove={removeUrl} />
+      {currentlySelectedRecords.map((record) => (
+        <Record
+          key={record.url}
+          record={record}
+          onRemoveClick={() => removeUrl(record.url)}
+        />
       ))}
       <button onClick={removeAllUrls}>clear</button>
       <div>
-        <h2>presets</h2>
+        <b>presets:</b>
         <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
         <button onClick={() => selectPresetUrls("news")}>news</button>
       </div>
