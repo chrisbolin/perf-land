@@ -20,6 +20,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "stage": "surge build/ performance-analysis.surge.sh",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
