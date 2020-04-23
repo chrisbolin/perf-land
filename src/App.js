@@ -47,7 +47,7 @@ function selectRecords(records, selectedUrls) {
   return Array.from(selectedUrls.keys()).map((url) => records[url]);
 }
 
-function Record({
+function SelectedRecord({
   record,
   onRemoveClick,
   highlighted,
@@ -56,7 +56,7 @@ function Record({
 }) {
   return (
     <div
-      className="Record"
+      className="SelectedRecord"
       style={{ fontWeight: highlighted ? "bold" : "normal" }}
     >
       {record.url}
@@ -65,6 +65,21 @@ function Record({
       {highlighted && (
         <button onClick={onHighlightRemoveClick}>remove highlight</button>
       )}
+    </div>
+  );
+}
+
+function RecordDetails({ record }) {
+  return (
+    <div className="RecordDetails">
+      <h4>{record.url}</h4>
+      <ul>
+        <li>cdn: {record.cdn || "none"}</li>
+        <li>
+          profile time, local time:{" "}
+          {new Date(parseInt(record.startedDateTime * 1000)).toLocaleString()}
+        </li>
+      </ul>
     </div>
   );
 }
@@ -179,7 +194,7 @@ function App() {
         placeholder="Add websites..."
       />
       {currentlySelectedRecords.map((record) => (
-        <Record
+        <SelectedRecord
           key={record.url}
           record={record}
           onRemoveClick={() => removeUrl(record.url)}
@@ -194,7 +209,7 @@ function App() {
         <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
         <button onClick={() => selectPresetUrls("news")}>news</button>
       </div>
-      <h1>charts</h1>
+      {!!currentlySelectedRecords.length && <h1>charts</h1>}
       <div className="charts">
         <Chart
           records={currentlySelectedRecords}
@@ -260,6 +275,10 @@ function App() {
           yTransform={(y) => Math.round(y / 1000)}
         />
       </div>
+      {!!currentlySelectedRecords.length && <h1>details</h1>}
+      {currentlySelectedRecords.map((record) => (
+        <RecordDetails key={record.url} record={record} />
+      ))}
     </div>
   );
 }
