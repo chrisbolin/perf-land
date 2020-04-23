@@ -5,7 +5,7 @@ import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 import "./App.css";
 
-const DATA_PATH = "/dump006.csv";
+const DATA_PATH = "/dump007.csv";
 
 const presets = {
   airlines: [
