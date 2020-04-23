@@ -5,28 +5,36 @@ import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 import "./App.css";
 
+const DATA_PATH = "/dump006.csv";
+
 const presets = {
   airlines: [
-    "https://www.southwest.com/",
-    "https://www.delta.com/",
-    "https://www.united.com/",
-    "https://www.jetblue.com/",
-    "https://www.alaskaair.com/",
-    "https://www.flyfrontier.com/",
+    "www.southwest.com",
+    "www.delta.com",
+    "www.united.com",
+    "www.jetblue.com",
+    "www.alaskaair.com",
+    "www.flyfrontier.com",
   ],
   news: [
-    "https://www.latimes.com/",
-    "http://www.nytimes.com/",
-    "https://www.theatlantic.com/",
-    "https://www.bbc.co.uk/",
-    "https://www.aljazeera.com/",
+    "www.latimes.com",
+    "app.nytimes.com",
+    "www.theatlantic.com",
+    "www.bbc.co.uk",
+    "www.aljazeera.com",
+  ],
+  socialMedia: [
+    "twitter.com",
+    "m.facebook.com",
+    "www.instagram.com",
+    "www.pinterest.com",
   ],
 };
 
 function downloadRecords() {
   return new Promise((resolve, reject) => {
     console.time("download");
-    parse("/dump005.csv", {
+    parse(DATA_PATH, {
       download: true,
       header: true,
       complete: (results) => {
@@ -219,6 +227,9 @@ function App() {
         <b>presets:</b>
         <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
         <button onClick={() => selectPresetUrls("news")}>news</button>
+        <button onClick={() => selectPresetUrls("socialMedia")}>
+          social media
+        </button>
       </div>
       {!!currentlySelectedRecords.length && <h1>charts</h1>}
       <div className="charts">
