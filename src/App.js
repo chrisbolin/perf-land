@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { parse } from "papaparse";
-import { groupBy } from "lodash";
+import { keyBy } from "lodash";
 import AsyncSelect from "react-select/async";
 
 import "./App.css";
+
+const presets = {
+  airlines: [
+    "https://www.southwest.com/",
+    "https://www.delta.com/",
+    "https://www.united.com/",
+    "https://www.jetblue.com/",
+    "https://www.alaskaair.com/",
+    "https://www.flyfrontier.com/",
+  ],
+  news: [
+    "https://www.latimes.com/",
+    "https://www.nytimes.com/",
+    "https://www.theatlantic.com/",
+    "https://www.bbc.co.uk/",
+    "https://www.aljazeera.com/",
+  ],
+};
 
 function downloadRecords() {
   return new Promise((resolve, reject) => {
@@ -13,7 +31,7 @@ function downloadRecords() {
       header: true,
       complete: (results) => {
         console.timeEnd("download");
-        resolve(groupBy(results.data, "url"));
+        resolve(keyBy(results.data, "url"));
       },
       error: (error) => reject(error),
     });
@@ -75,8 +93,16 @@ function App() {
       return next;
     });
 
+  const removeAllUrls = () => setSelectedUrls(new Set());
+
+  const selectPresetUrls = (presetName) =>
+    setSelectedUrls(new Set(presets[presetName]));
+
+  window.records = records;
+
   return (
     <div className="App">
+      <h2>websites</h2>
       <AsyncSelect
         className="UrlSelect"
         loadOptions={loadOptions}
@@ -88,6 +114,12 @@ function App() {
       {Array.from(selectedUrls.keys()).map((url) => (
         <Item key={url} url={url} onRemove={removeUrl} />
       ))}
+      <button onClick={removeAllUrls}>clear</button>
+      <div>
+        <h2>presets</h2>
+        <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
+        <button onClick={() => selectPresetUrls("news")}>news</button>
+      </div>
     </div>
   );
 }
