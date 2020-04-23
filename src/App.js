@@ -5,28 +5,44 @@ import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 import "./App.css";
 
+const DATA_PATH = "/dump007.csv";
+
 const presets = {
   airlines: [
-    "https://www.southwest.com/",
-    "https://www.delta.com/",
-    "https://www.united.com/",
-    "https://www.jetblue.com/",
-    "https://www.alaskaair.com/",
-    "https://www.flyfrontier.com/",
+    "www.united.com",
+    "www.southwest.com",
+    "www.delta.com",
+    "www.jetblue.com",
+    "www.alaskaair.com",
+    "www.flyfrontier.com",
   ],
   news: [
-    "https://www.latimes.com/",
-    "http://www.nytimes.com/",
-    "https://www.theatlantic.com/",
-    "https://www.bbc.co.uk/",
-    "https://www.aljazeera.com/",
+    "www.aljazeera.com",
+    "www.latimes.com",
+    "app.nytimes.com",
+    "www.theatlantic.com",
+    "www.bbc.co.uk",
+  ],
+  "social media": [
+    "m.facebook.com",
+    "twitter.com",
+    "www.instagram.com",
+    "www.pinterest.com",
+  ],
+  lululemon: [
+    "shop.lululemon.com",
+    "www.target.com",
+    "www.nike.com",
+    "shop.nordstrom.com",
+    "www.amazon.com",
+    "www.mercadolivre.com.br",
   ],
 };
 
 function downloadRecords() {
   return new Promise((resolve, reject) => {
     console.time("download");
-    parse("/dump005.csv", {
+    parse(DATA_PATH, {
       download: true,
       header: true,
       complete: (results) => {
@@ -107,7 +123,7 @@ function Chart({
         <VictoryAxis
           label={name}
           tickLabelComponent={
-            <VictoryLabel angle={-90} textAnchor="left" dy={10} dx={10} />
+            <VictoryLabel angle={-90} textAnchor="left" dy={10} dx={12} />
           }
         />
         <VictoryAxis dependentAxis />
@@ -116,7 +132,7 @@ function Chart({
           style={{
             data: {
               fill: ({ datum }) =>
-                datum.x === highlightedUrl ? "red" : undefined,
+                datum.x === highlightedUrl ? "blue" : undefined,
             },
           }}
         />
@@ -136,6 +152,7 @@ function App() {
       setRecords(records);
       const urls = Object.keys(records);
       setUrls(urls);
+      selectPresetUrls("airlines");
     });
   }, []);
 
@@ -169,8 +186,11 @@ function App() {
 
   const removeAllUrls = () => setSelectedUrls(new Set());
 
-  const selectPresetUrls = (presetName) =>
-    setSelectedUrls(new Set(presets[presetName]));
+  const selectPresetUrls = (presetName) => {
+    const presetUrls = presets[presetName];
+    setSelectedUrls(new Set(presetUrls));
+    changeHighlightUrl(presetUrls[0]);
+  };
 
   const changeHighlightUrl = (url) =>
     setUiState((uiState) => ({ ...uiState, highlightedUrl: url }));
@@ -184,31 +204,63 @@ function App() {
 
   return (
     <div className="App">
+      <h1>performance comparison</h1>
+      <p>
+        <ul>
+          <li>note: this is a demo. be aware of sharp edges</li>
+          <li>select some websites to compare</li>
+          <li>or pick a preset group of sites</li>
+          <li>most of the top 20,000 sites are here</li>
+          <li>there will definitely be some sites missing! let me know</li>
+          <li>
+            all data is from the HTTP Archive, which is public and free (in all
+            senses)
+          </li>
+          <li>
+            tests are run from a private instance of WebPageTest located in
+            Redwood City, California.{" "}
+            <a href="https://httparchive.org/faq#how-is-the-data-gathered">
+              more info here.
+            </a>
+          </li>
+        </ul>
+      </p>
       <h1>websites</h1>
-      <AsyncSelect
-        className="UrlSelect"
-        loadOptions={loadOptions}
-        defaultOptions={[]}
-        onChange={(option) => addUrl(option.value)}
-        value=""
-        placeholder="Add websites..."
-      />
-      {currentlySelectedRecords.map((record) => (
-        <SelectedRecord
-          key={record.url}
-          record={record}
-          onRemoveClick={() => removeUrl(record.url)}
-          highlighted={record.url === highlightedUrl}
-          onHighlightClick={() => changeHighlightUrl(record.url)}
-          onHighlightRemoveClick={removeHighlightUrl}
-        />
-      ))}
-      <button onClick={removeAllUrls}>clear</button>
-      <div>
-        <b>presets:</b>
-        <button onClick={() => selectPresetUrls("airlines")}>airlines</button>
-        <button onClick={() => selectPresetUrls("news")}>news</button>
-      </div>
+      {!urls.length && <p>loading...</p>}
+      {!!urls.length && (
+        <div>
+          <AsyncSelect
+            className="UrlSelect"
+            loadOptions={loadOptions}
+            defaultOptions={[]}
+            onChange={(option) => addUrl(option.value)}
+            value=""
+            placeholder="Add website..."
+          />
+          {currentlySelectedRecords.map((record) => (
+            <SelectedRecord
+              key={record.url}
+              record={record}
+              onRemoveClick={() => removeUrl(record.url)}
+              highlighted={record.url === highlightedUrl}
+              onHighlightClick={() => changeHighlightUrl(record.url)}
+              onHighlightRemoveClick={removeHighlightUrl}
+            />
+          ))}
+          <button onClick={removeAllUrls}>clear</button>
+          <div>
+            <b>presets:</b>
+            {Object.keys(presets).map((presetKey) => (
+              <button
+                key={presetKey}
+                onClick={() => selectPresetUrls(presetKey)}
+              >
+                {presetKey}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {!!currentlySelectedRecords.length && <h1>charts</h1>}
       <div className="charts">
         <Chart
