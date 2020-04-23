@@ -56,8 +56,15 @@ function Record({ record, onRemoveClick }) {
   );
 }
 
-function Chart({ records, field, name }) {
+function Chart({ records, field, name, reverse = false }) {
   if (!records.length) return null;
+
+  const data = records
+    .map((record) => ({
+      x: record.url,
+      y: parseFloat(record[field]) || 0,
+    }))
+    .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
 
   return (
     <div className="Chart">
@@ -69,11 +76,7 @@ function Chart({ records, field, name }) {
           }
         />
         <VictoryAxis dependentAxis />
-        <VictoryBar
-          data={records}
-          x="url"
-          y={(record) => parseFloat(record[field]) || 0}
-        />
+        <VictoryBar data={data} />
       </VictoryChart>
     </div>
   );
@@ -193,15 +196,10 @@ function App() {
         records={currentlySelectedRecords}
         name="Lighthouse Performance Score"
         field="performanceScore"
+        reverse
       />
     </div>
   );
 }
-
-/*
-maxPotentialFirstInputDelay
-speedIndex
-performanceScore
-*/
 
 export default App;
