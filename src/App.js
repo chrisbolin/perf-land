@@ -328,6 +328,13 @@ function App() {
         />
         <Chart
           records={currentlySelectedRecords}
+          name="Total request payload (kB)"
+          field="bytesTotal"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          records={currentlySelectedRecords}
           name="Number of requests"
           field="reqTotal"
           highlightedUrl={highlightedUrl}
