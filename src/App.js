@@ -265,49 +265,49 @@ function App() {
       <div className="charts">
         <Chart
           records={currentlySelectedRecords}
-          name="Time to First Byte (ms)"
+          name="Time to first byte (ms)"
           field="TTFB"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="First Contentful Paint (ms)"
+          name="First contentful paint (ms)"
           field="firstContentfulPaint"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="First Meaningful Paint (ms)"
+          name="First meaningful paint (ms)"
           field="firstMeaningfulPaint"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="First CPU Idle (ms)"
+          name="First cpu idle (ms)"
           field="firstCPUIdle"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="Time to Interactive (ms)"
+          name="Time to interactive (ms)"
           field="timeToInteractive"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="Max Potential First Input Delay (ms)"
+          name="Max potential first input delay (ms)"
           field="maxPotentialFirstInputDelay"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="Speed Index"
+          name="Speed index"
           field="speedIndex"
           highlightedUrl={highlightedUrl}
         />
         <Chart
           records={currentlySelectedRecords}
-          name="Lighthouse Performance Score"
+          name="Lighthouse performance score"
           field="performanceScore"
           highlightedUrl={highlightedUrl}
           reverse
@@ -325,6 +325,12 @@ function App() {
           field="bytesImg"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          records={currentlySelectedRecords}
+          name="Number of requests"
+          field="reqTotal"
+          highlightedUrl={highlightedUrl}
         />
       </div>
       {!!currentlySelectedRecords.length && <h1>details</h1>}
