@@ -19,6 +19,8 @@ exports.main = (req, res) => {
   knex
     .select("*")
     .from("page_runs")
+    .where({ url: req.query.url })
+    .orderBy("startedDateTime", "desc")
     .limit(1)
     .then((results) => {
       const payload = JSON.stringify(results, null, 2);
