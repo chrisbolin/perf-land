@@ -26,10 +26,9 @@ exports.main = (req, res) => {
       const payload = JSON.stringify(results, null, 2);
       res.status(200).send(payload);
     })
-    .then(() => knex.destroy())
     .catch((error) => {
       res.status(500).send("Server error.");
       console.error(error);
-      knex.destroy();
-    });
+    })
+    .then(() => knex.destroy());
 };
