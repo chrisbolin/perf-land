@@ -1,5 +1,7 @@
 const main = require("./function").main;
 
+// res.status(200).send(payload);
+
 function Response() {
   this.result = {};
 
@@ -18,7 +20,9 @@ function Response() {
 }
 
 const request = {
-  query: { url: "https://www.google.com/" },
+  query: {
+    url: "https://www.google.com/,https://twitter.com/",
+  },
 };
 
 main(request, new Response());
