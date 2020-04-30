@@ -59,8 +59,10 @@ function urlMatches(searchString, urls) {
   return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
 }
 
-function selectRecords(records, selectedUrls) {
-  return Array.from(selectedUrls.keys()).map((url) => records[url]);
+function selectSelectedSite(state) {
+  return Array.from(state.selectedUrls.keys()).map((url) => {
+    return state.sites[url];
+  });
 }
 
 function SelectedRecord({
@@ -153,7 +155,8 @@ function reducer(state, action) {
     case RECEIVE_SITES: {
       const sites = action.payload;
       return {
-        sites: { ...state.sites, sites },
+        ...state,
+        sites: { ...state.sites, ...sites },
         urls: Object.keys(sites),
       };
     }
@@ -192,14 +195,12 @@ const initialState = {
 };
 
 function App() {
-  const [records, setRecords] = useState({});
-  const [urls, setUrls] = useState([]);
-  const [{ highlightedUrl, selectedUrls }, dispatch] = useReducer(
-    reducer,
-    initialState
-  );
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  console.log({ highlightedUrl, selectedUrls });
+  const { highlightedUrl, urls, sites } = state;
+  const currentlySelectedRecords = selectSelectedSite(state);
+
+  console.log(state);
 
   // reducer state
 
@@ -233,13 +234,17 @@ function App() {
   const selectPresetUrls = (presetName) =>
     dispatch({ type: SELECT_PRESET_URLS, payload: presetName });
 
+  const receiveSites = (sites) =>
+    dispatch({
+      type: RECEIVE_SITES,
+      payload: sites,
+    });
+
   // effects
 
   useEffect(() => {
     downloadRecords().then((records) => {
-      setRecords(records);
-      const urls = Object.keys(records);
-      setUrls(urls);
+      receiveSites(records);
       selectPresetUrls("airlines");
     });
   }, []);
@@ -258,9 +263,7 @@ function App() {
     }
   };
 
-  const currentlySelectedRecords = selectRecords(records, selectedUrls);
-
-  window.records = records;
+  window.sites = sites;
 
   return (
     <div className="App">
