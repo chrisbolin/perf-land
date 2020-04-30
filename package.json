@@ -37,5 +37,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "knex": "^0.21.1",
+    "mysql": "^2.18.1"
   }
 }
