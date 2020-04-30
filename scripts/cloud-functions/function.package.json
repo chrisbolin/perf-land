@@ -1,0 +1,8 @@
+{
+  "name": "webperf-function",
+  "version": "0.0.1",
+  "dependencies": {
+    "knex": "^0.21.1",
+    "mysql": "^2.18.1"
+  }
+}
