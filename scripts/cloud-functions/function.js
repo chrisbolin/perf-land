@@ -1,3 +1,7 @@
+const knex = require("knex");
+
+const LIMIT_URL_COUNT = 100;
+
 /**
  * Responds to any HTTP request.
  *
@@ -5,7 +9,7 @@
  * @param {!express:Response} res HTTP response context.
  */
 exports.main = (req, res) => {
-  const knex = require("knex")({
+  const connection = knex({
     client: "mysql",
     connection: {
       [process.env.DB_CONNECTION_TYPE_KEY]:
@@ -16,19 +20,27 @@ exports.main = (req, res) => {
     },
   });
 
-  knex
+  try {
+    var urls = req.query.url.split(",");
+    if (urls.length > LIMIT_URL_COUNT) throw new Error("Too many URLs");
+  } catch (error) {
+    res.status(400).send("Client error");
+    console.error(error);
+    return;
+  }
+
+  connection
     .select("*")
     .from("page_runs")
-    .where({ url: req.query.url })
+    .whereIn("url", urls)
     .orderBy("startedDateTime", "desc")
-    .limit(1)
     .then((results) => {
       const payload = JSON.stringify(results, null, 2);
       res.status(200).send(payload);
     })
     .catch((error) => {
-      res.status(500).send("Server error.");
+      res.status(500).send("Server error");
       console.error(error);
     })
-    .then(() => knex.destroy());
+    .then(() => connection.destroy());
 };
