@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer } from "react";
+import React, { useEffect, useReducer } from "react";
 import { parse } from "papaparse";
 import { keyBy } from "lodash";
 import AsyncSelect from "react-select/async";
@@ -54,14 +54,18 @@ function downloadRecords() {
   });
 }
 
-function urlMatches(searchString, urls) {
+function urlMatches(searchString: string, urls: string[]) {
   const MAX_RESULTS = 100;
   return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
 }
 
-function selectRecords(records, selectedUrls) {
-  return Array.from(selectedUrls.keys()).map((url) => records[url]);
+function selectSelectedSite(state: State) {
+  return Array.from(state.selectedUrls.keys()).map((url) => {
+    return state.sites[url];
+  });
 }
+
+type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 
 function SelectedRecord({
   record,
@@ -69,6 +73,12 @@ function SelectedRecord({
   highlighted,
   onHighlightClick,
   onHighlightRemoveClick,
+}: {
+  record: Site;
+  highlighted: boolean;
+  onRemoveClick: EventCallbackFunction;
+  onHighlightClick: EventCallbackFunction;
+  onHighlightRemoveClick: EventCallbackFunction;
 }) {
   return (
     <div
@@ -85,7 +95,7 @@ function SelectedRecord({
   );
 }
 
-function RecordDetails({ record }) {
+function RecordDetails({ record }: { record: Site }) {
   return (
     <div className="RecordDetails">
       <h4>{record.url}</h4>
@@ -93,12 +103,14 @@ function RecordDetails({ record }) {
         <li>cdn: {record.cdn || "none"}</li>
         <li>
           profile time, local time:{" "}
-          {new Date(parseInt(record.startedDateTime * 1000)).toLocaleString()}
+          {new Date(parseInt(record.startedDateTime) * 1000).toLocaleString()}
         </li>
       </ul>
     </div>
   );
 }
+
+type IdentityFunction = (x: number) => number;
 
 function Chart({
   records,
@@ -107,6 +119,13 @@ function Chart({
   highlightedUrl,
   reverse = false,
   yTransform = (x) => x,
+}: {
+  records: Site[];
+  field: string;
+  name: string;
+  highlightedUrl: string;
+  reverse: boolean;
+  yTransform: IdentityFunction;
 }) {
   if (!records.length) return null;
 
@@ -123,7 +142,7 @@ function Chart({
         <VictoryAxis
           label={name}
           tickLabelComponent={
-            <VictoryLabel angle={-90} textAnchor="left" dy={10} dx={12} />
+            <VictoryLabel angle={-90} textAnchor="start" dy={10} dx={12} />
           }
         />
         <VictoryAxis dependentAxis />
@@ -131,8 +150,7 @@ function Chart({
           data={data}
           style={{
             data: {
-              fill: ({ datum }) =>
-                datum.x === highlightedUrl ? "blue" : undefined,
+              fill: ({ datum }) => (datum.x === highlightedUrl ? "blue" : ""),
             },
           }}
         />
@@ -142,59 +160,112 @@ function Chart({
 }
 
 const RECEIVE_SITES = "RECEIVE_SITES";
-const ADD_SELECTED_SITE = "ADD_SELECTED_SITE";
-const REMOVE_SELECTED_SITE = "REMOVE_SELECTED_SITE";
-const SELECT_PRESET_SITES = "SELECT_PRESET_SITES";
+const ADD_SELECTED_URL = "ADD_SELECTED_URL";
+const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
+const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
+const SELECT_PRESET_URLS = "SELECT_PRESET_URLS";
 const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
 
-function reducer(state, action) {
+interface Site {
+  url: string;
+  cdn: string;
+  startedDateTime: string;
+  [otherKey: string]: string;
+}
+
+interface Sites {
+  [key: string]: Site;
+}
+
+interface State {
+  highlightedUrl: string;
+  sites: Sites;
+  urls: string[];
+  selectedUrls: Set<string>;
+}
+
+interface BareAction {
+  type: typeof CLEAR_ALL_SELECTED_URLS;
+}
+
+interface StringAction {
+  type:
+    | typeof ADD_SELECTED_URL
+    | typeof REMOVE_SELECTED_URL
+    | typeof CHANGE_HIGHLIGHTED_URL;
+  payload: string;
+}
+
+type PresetName = "airlines" | "news" | "social media" | "lululemon";
+
+interface SelectPresetAction {
+  type: typeof SELECT_PRESET_URLS;
+  payload: PresetName;
+}
+
+interface ReceiveSitesAction {
+  type: typeof RECEIVE_SITES;
+  payload: Sites;
+}
+
+type Action =
+  | ReceiveSitesAction
+  | SelectPresetAction
+  | StringAction
+  | BareAction;
+
+function reducer(state: State, action: Action): State {
   switch (action.type) {
     case RECEIVE_SITES: {
       const sites = action.payload;
       return {
-        sites: { ...state.sites, sites },
+        ...state,
+        sites: { ...state.sites, ...sites },
         urls: Object.keys(sites),
       };
     }
-    case ADD_SELECTED_SITE: {
-      const selectedSites = new Set(state.selectedSites);
-      selectedSites.add(action.payload);
-      return { ...state, selectedSites };
+    case ADD_SELECTED_URL: {
+      const selectedUrls = new Set(state.selectedUrls);
+      selectedUrls.add(action.payload);
+      return { ...state, selectedUrls };
     }
-    case REMOVE_SELECTED_SITE: {
-      const selectedSites = new Set(state.selectedSites);
-      selectedSites.delete(action.payload);
-      return { ...state, selectedSites };
+    case REMOVE_SELECTED_URL: {
+      const selectedUrls = new Set(state.selectedUrls);
+      selectedUrls.delete(action.payload);
+      return { ...state, selectedUrls };
     }
-    case SELECT_PRESET_SITES: {
-      const selectedSites = new Set(presets[action.payload]);
-      return { ...state, selectedSites };
+    case CLEAR_ALL_SELECTED_URLS: {
+      return { ...state, selectedUrls: new Set() };
+    }
+    case SELECT_PRESET_URLS: {
+      const urls = presets[action.payload];
+      const selectedUrls = new Set(urls);
+      return { ...state, selectedUrls, highlightedUrl: urls[0] };
     }
     case CHANGE_HIGHLIGHTED_URL: {
       return { ...state, highlightedUrl: action.payload };
     }
-    default: {
-      throw new Error(`Action type not handled: ${action.type}`);
-    }
   }
 }
 
-const initialState = {
-  highlightedUrl: null,
+const initialState: State = {
+  highlightedUrl: "",
   sites: {},
   urls: [],
-  selectedSites: new Set(),
+  selectedUrls: new Set(),
 };
 
 function App() {
-  const [records, setRecords] = useState({});
-  const [urls, setUrls] = useState([]);
-  const [selectedUrls, setSelectedUrls] = useState(new Set());
-  const [{ highlightedUrl }, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  console.log({ highlightedUrl });
+  const { highlightedUrl, urls } = state;
+  const currentlySelectedRecords = selectSelectedSite(state);
 
-  const changeHighlightSite = (url) =>
+  console.log(state);
+
+  // reducer state
+
+  const changeHighlightSite = (url: string) =>
     dispatch({
       type: CHANGE_HIGHLIGHTED_URL,
       payload: url,
@@ -203,19 +274,43 @@ function App() {
   const removeHighlightSite = () =>
     dispatch({
       type: CHANGE_HIGHLIGHTED_URL,
-      payload: null,
+      payload: "",
     });
+
+  const addUrl = (url: string) =>
+    dispatch({
+      type: ADD_SELECTED_URL,
+      payload: url,
+    });
+
+  const removeUrl = (url: string) =>
+    dispatch({
+      type: REMOVE_SELECTED_URL,
+      payload: url,
+    });
+
+  const clearAllSelectedUrls = () =>
+    dispatch({ type: CLEAR_ALL_SELECTED_URLS });
+
+  const selectPresetUrls = (presetName: PresetName) =>
+    dispatch({ type: SELECT_PRESET_URLS, payload: presetName });
+
+  const receiveSites = (sites: Sites) =>
+    dispatch({
+      type: RECEIVE_SITES,
+      payload: sites,
+    });
+
+  // effects
 
   useEffect(() => {
     downloadRecords().then((records) => {
-      setRecords(records);
-      const urls = Object.keys(records);
-      setUrls(urls);
+      receiveSites(records as Sites);
       selectPresetUrls("airlines");
     });
   }, []);
 
-  const loadOptions = (inputValue, callback) => {
+  const loadOptions = (inputValue: string, callback: Function) => {
     const MIN_INPUT = 3;
     if (inputValue.length < MIN_INPUT) {
       callback([]);
@@ -228,32 +323,6 @@ function App() {
       );
     }
   };
-
-  const addUrl = (url) =>
-    setSelectedUrls((current) => {
-      const next = new Set(current);
-      next.add(url);
-      return next;
-    });
-
-  const removeUrl = (url) =>
-    setSelectedUrls((current) => {
-      const next = new Set(current);
-      next.delete(url);
-      return next;
-    });
-
-  const removeAllUrls = () => setSelectedUrls(new Set());
-
-  const selectPresetUrls = (presetName) => {
-    const presetUrls = presets[presetName];
-    setSelectedUrls(new Set(presetUrls));
-    changeHighlightSite(presetUrls[0]);
-  };
-
-  const currentlySelectedRecords = selectRecords(records, selectedUrls);
-
-  window.records = records;
 
   return (
     <div className="App">
@@ -286,8 +355,13 @@ function App() {
             className="UrlSelect"
             loadOptions={loadOptions}
             defaultOptions={[]}
-            onChange={(option) => addUrl(option.value)}
-            value=""
+            onChange={(option) => {
+              const newOption = option as { value: string };
+              if (newOption) {
+                addUrl(newOption.value);
+              }
+            }}
+            value={{ value: "" }}
             placeholder="Add website..."
           />
           {currentlySelectedRecords.map((record) => (
@@ -300,13 +374,13 @@ function App() {
               onHighlightRemoveClick={removeHighlightSite}
             />
           ))}
-          <button onClick={removeAllUrls}>clear</button>
+          <button onClick={clearAllSelectedUrls}>clear</button>
           <div>
             <b>presets:</b>
             {Object.keys(presets).map((presetKey) => (
               <button
                 key={presetKey}
-                onClick={() => selectPresetUrls(presetKey)}
+                onClick={() => selectPresetUrls(presetKey as PresetName)}
               >
                 {presetKey}
               </button>
@@ -321,42 +395,56 @@ function App() {
           name="Time to first byte (ms)"
           field="TTFB"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="First contentful paint (ms)"
           field="firstContentfulPaint"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="First meaningful paint (ms)"
           field="firstMeaningfulPaint"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="First cpu idle (ms)"
           field="firstCPUIdle"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="Time to interactive (ms)"
           field="timeToInteractive"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="Max potential first input delay (ms)"
           field="maxPotentialFirstInputDelay"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="Speed index"
           field="speedIndex"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
@@ -364,12 +452,14 @@ function App() {
           field="performanceScore"
           highlightedUrl={highlightedUrl}
           reverse
+          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="JavaScript payload (kB)"
           field="bytesJS"
           highlightedUrl={highlightedUrl}
+          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
@@ -377,6 +467,7 @@ function App() {
           name="Image payload (kB)"
           field="bytesImg"
           highlightedUrl={highlightedUrl}
+          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
@@ -384,6 +475,7 @@ function App() {
           name="Total request payload (kB)"
           field="bytesTotal"
           highlightedUrl={highlightedUrl}
+          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
@@ -391,6 +483,8 @@ function App() {
           name="Number of requests"
           field="reqTotal"
           highlightedUrl={highlightedUrl}
+          reverse={false}
+          yTransform={(y) => Math.round(y / 1000)}
         />
       </div>
       {!!currentlySelectedRecords.length && <h1>details</h1>}
