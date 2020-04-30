@@ -21,7 +21,8 @@ function Response() {
 
 const request = {
   query: {
-    url: "https://www.google.com/,https://twitter.com/",
+    // url: "https://www.google.com/,https://twitter.com/",
+    search: "twitter",
   },
 };
 
