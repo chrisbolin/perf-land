@@ -142,9 +142,10 @@ function Chart({
 }
 
 const RECEIVE_SITES = "RECEIVE_SITES";
-const ADD_SELECTED_SITE = "ADD_SELECTED_SITE";
-const REMOVE_SELECTED_SITE = "REMOVE_SELECTED_SITE";
-const SELECT_PRESET_SITES = "SELECT_PRESET_SITES";
+const ADD_SELECTED_URL = "ADD_SELECTED_URL";
+const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
+const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
+const SELECT_PRESET_URLS = "SELECT_PRESET_URLS";
 const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
 
 function reducer(state, action) {
@@ -156,19 +157,23 @@ function reducer(state, action) {
         urls: Object.keys(sites),
       };
     }
-    case ADD_SELECTED_SITE: {
-      const selectedSites = new Set(state.selectedSites);
-      selectedSites.add(action.payload);
-      return { ...state, selectedSites };
+    case ADD_SELECTED_URL: {
+      const selectedUrls = new Set(state.selectedUrls);
+      selectedUrls.add(action.payload);
+      return { ...state, selectedUrls };
     }
-    case REMOVE_SELECTED_SITE: {
-      const selectedSites = new Set(state.selectedSites);
-      selectedSites.delete(action.payload);
-      return { ...state, selectedSites };
+    case REMOVE_SELECTED_URL: {
+      const selectedUrls = new Set(state.selectedUrls);
+      selectedUrls.delete(action.payload);
+      return { ...state, selectedUrls };
     }
-    case SELECT_PRESET_SITES: {
-      const selectedSites = new Set(presets[action.payload]);
-      return { ...state, selectedSites };
+    case CLEAR_ALL_SELECTED_URLS: {
+      return { ...state, selectedUrls: new Set() };
+    }
+    case SELECT_PRESET_URLS: {
+      const urls = presets[action.payload];
+      const selectedUrls = new Set(urls);
+      return { ...state, selectedUrls, highlightedUrl: urls[0] };
     }
     case CHANGE_HIGHLIGHTED_URL: {
       return { ...state, highlightedUrl: action.payload };
@@ -183,16 +188,20 @@ const initialState = {
   highlightedUrl: null,
   sites: {},
   urls: [],
-  selectedSites: new Set(),
+  selectedUrls: new Set(),
 };
 
 function App() {
   const [records, setRecords] = useState({});
   const [urls, setUrls] = useState([]);
-  const [selectedUrls, setSelectedUrls] = useState(new Set());
-  const [{ highlightedUrl }, dispatch] = useReducer(reducer, initialState);
+  const [{ highlightedUrl, selectedUrls }, dispatch] = useReducer(
+    reducer,
+    initialState
+  );
 
-  console.log({ highlightedUrl });
+  console.log({ highlightedUrl, selectedUrls });
+
+  // reducer state
 
   const changeHighlightSite = (url) =>
     dispatch({
@@ -205,6 +214,26 @@ function App() {
       type: CHANGE_HIGHLIGHTED_URL,
       payload: null,
     });
+
+  const addUrl = (url) =>
+    dispatch({
+      type: ADD_SELECTED_URL,
+      payload: url,
+    });
+
+  const removeUrl = (url) =>
+    dispatch({
+      type: REMOVE_SELECTED_URL,
+      payload: url,
+    });
+
+  const clearAllSelectedUrls = () =>
+    dispatch({ type: CLEAR_ALL_SELECTED_URLS });
+
+  const selectPresetUrls = (presetName) =>
+    dispatch({ type: SELECT_PRESET_URLS, payload: presetName });
+
+  // effects
 
   useEffect(() => {
     downloadRecords().then((records) => {
@@ -227,28 +256,6 @@ function App() {
         }))
       );
     }
-  };
-
-  const addUrl = (url) =>
-    setSelectedUrls((current) => {
-      const next = new Set(current);
-      next.add(url);
-      return next;
-    });
-
-  const removeUrl = (url) =>
-    setSelectedUrls((current) => {
-      const next = new Set(current);
-      next.delete(url);
-      return next;
-    });
-
-  const removeAllUrls = () => setSelectedUrls(new Set());
-
-  const selectPresetUrls = (presetName) => {
-    const presetUrls = presets[presetName];
-    setSelectedUrls(new Set(presetUrls));
-    changeHighlightSite(presetUrls[0]);
   };
 
   const currentlySelectedRecords = selectRecords(records, selectedUrls);
@@ -300,7 +307,7 @@ function App() {
               onHighlightRemoveClick={removeHighlightSite}
             />
           ))}
-          <button onClick={removeAllUrls}>clear</button>
+          <button onClick={clearAllSelectedUrls}>clear</button>
           <div>
             <b>presets:</b>
             {Object.keys(presets).map((presetKey) => (
