@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useReducer } from "react";
 import { parse } from "papaparse";
 import { keyBy } from "lodash";
 import AsyncSelect from "react-select/async";
@@ -141,11 +141,70 @@ function Chart({
   );
 }
 
+const RECEIVE_SITES = "RECEIVE_SITES";
+const ADD_SELECTED_SITE = "ADD_SELECTED_SITE";
+const REMOVE_SELECTED_SITE = "REMOVE_SELECTED_SITE";
+const SELECT_PRESET_SITES = "SELECT_PRESET_SITES";
+const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
+
+function reducer(state, action) {
+  switch (action.type) {
+    case RECEIVE_SITES: {
+      const sites = action.payload;
+      return {
+        sites: { ...state.sites, sites },
+        urls: Object.keys(sites),
+      };
+    }
+    case ADD_SELECTED_SITE: {
+      const selectedSites = new Set(state.selectedSites);
+      selectedSites.add(action.payload);
+      return { ...state, selectedSites };
+    }
+    case REMOVE_SELECTED_SITE: {
+      const selectedSites = new Set(state.selectedSites);
+      selectedSites.delete(action.payload);
+      return { ...state, selectedSites };
+    }
+    case SELECT_PRESET_SITES: {
+      const selectedSites = new Set(presets[action.payload]);
+      return { ...state, selectedSites };
+    }
+    case CHANGE_HIGHLIGHTED_URL: {
+      return { ...state, highlightedUrl: action.payload };
+    }
+    default: {
+      throw new Error(`Action type not handled: ${action.type}`);
+    }
+  }
+}
+
+const initialState = {
+  highlightedUrl: null,
+  sites: {},
+  urls: [],
+  selectedSites: new Set(),
+};
+
 function App() {
   const [records, setRecords] = useState({});
   const [urls, setUrls] = useState([]);
   const [selectedUrls, setSelectedUrls] = useState(new Set());
-  const [{ highlightedUrl }, setUiState] = useState({ highlightedUrl: null });
+  const [{ highlightedUrl }, dispatch] = useReducer(reducer, initialState);
+
+  console.log({ highlightedUrl });
+
+  const changeHighlightSite = (url) =>
+    dispatch({
+      type: CHANGE_HIGHLIGHTED_URL,
+      payload: url,
+    });
+
+  const removeHighlightSite = () =>
+    dispatch({
+      type: CHANGE_HIGHLIGHTED_URL,
+      payload: null,
+    });
 
   useEffect(() => {
     downloadRecords().then((records) => {
@@ -189,14 +248,8 @@ function App() {
   const selectPresetUrls = (presetName) => {
     const presetUrls = presets[presetName];
     setSelectedUrls(new Set(presetUrls));
-    changeHighlightUrl(presetUrls[0]);
+    changeHighlightSite(presetUrls[0]);
   };
-
-  const changeHighlightUrl = (url) =>
-    setUiState((uiState) => ({ ...uiState, highlightedUrl: url }));
-
-  const removeHighlightUrl = (url) =>
-    setUiState((uiState) => ({ ...uiState, highlightedUrl: null }));
 
   const currentlySelectedRecords = selectRecords(records, selectedUrls);
 
@@ -243,8 +296,8 @@ function App() {
               record={record}
               onRemoveClick={() => removeUrl(record.url)}
               highlighted={record.url === highlightedUrl}
-              onHighlightClick={() => changeHighlightUrl(record.url)}
-              onHighlightRemoveClick={removeHighlightUrl}
+              onHighlightClick={() => changeHighlightSite(record.url)}
+              onHighlightRemoveClick={removeHighlightSite}
             />
           ))}
           <button onClick={removeAllUrls}>clear</button>
