@@ -7,23 +7,6 @@ const URL_COUNT_MAX = 100;
 const SEARCH_STRING_MIN = 3;
 const SEARCH_RESULTS_MAX = 50;
 
-/*
-  place connection in global scope to cache it
-  from docs (https://cloud.google.com/functions/docs/bestpractices/tips)
-  Cloud Functions often recycles the execution environment ...
-  If you declare a variable in global scope, its value can be reused in subsequent invocations ...
-  It is particularly important to cache network connections, library references, and API client objects in global scope.
-*/
-const connection = knex({
-  client: "mysql",
-  connection: {
-    [process.env.DB_CONNECTION_TYPE_KEY]: process.env.DB_CONNECTION_TYPE_VALUE,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: "data",
-  },
-});
-
 function getPages(connection, res, urls) {
   return connection
     .select("*")
@@ -93,6 +76,17 @@ function main(req, res) {
     console.error(error);
     return;
   }
+
+  const connection = knex({
+    client: "mysql",
+    connection: {
+      [process.env.DB_CONNECTION_TYPE_KEY]:
+        process.env.DB_CONNECTION_TYPE_VALUE,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: "data",
+    },
+  });
 
   runAction(connection, res, type, data)
     .catch((error) => {
