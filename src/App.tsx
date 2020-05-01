@@ -354,14 +354,10 @@ function App() {
           <AsyncSelect
             className="UrlSelect"
             loadOptions={loadOptions}
-            defaultOptions={[]}
             onChange={(option) => {
-              const newOption = option as { value: string };
-              if (newOption) {
-                addUrl(newOption.value);
-              }
+              if (!option || "length" in option) return;
+              addUrl(option.value);
             }}
-            value={{ value: "" }}
             placeholder="Add website..."
           />
           {currentlySelectedRecords.map((record) => (
