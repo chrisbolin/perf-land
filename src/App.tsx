@@ -124,8 +124,8 @@ function Chart({
   field: string;
   name: string;
   highlightedUrl: string;
-  reverse: boolean;
-  yTransform: IdentityFunction;
+  reverse?: boolean;
+  yTransform?: IdentityFunction;
 }) {
   if (!records.length) return null;
 
@@ -395,56 +395,42 @@ function App() {
           name="Time to first byte (ms)"
           field="TTFB"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="First contentful paint (ms)"
           field="firstContentfulPaint"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="First meaningful paint (ms)"
           field="firstMeaningfulPaint"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="First cpu idle (ms)"
           field="firstCPUIdle"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="Time to interactive (ms)"
           field="timeToInteractive"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="Max potential first input delay (ms)"
           field="maxPotentialFirstInputDelay"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="Speed index"
           field="speedIndex"
           highlightedUrl={highlightedUrl}
-          reverse={false}
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
@@ -452,14 +438,12 @@ function App() {
           field="performanceScore"
           highlightedUrl={highlightedUrl}
           reverse
-          yTransform={(x) => x}
         />
         <Chart
           records={currentlySelectedRecords}
           name="JavaScript payload (kB)"
           field="bytesJS"
           highlightedUrl={highlightedUrl}
-          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
@@ -467,7 +451,6 @@ function App() {
           name="Image payload (kB)"
           field="bytesImg"
           highlightedUrl={highlightedUrl}
-          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
@@ -475,7 +458,6 @@ function App() {
           name="Total request payload (kB)"
           field="bytesTotal"
           highlightedUrl={highlightedUrl}
-          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
@@ -483,7 +465,6 @@ function App() {
           name="Number of requests"
           field="reqTotal"
           highlightedUrl={highlightedUrl}
-          reverse={false}
           yTransform={(y) => Math.round(y / 1000)}
         />
       </div>
