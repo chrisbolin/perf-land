@@ -196,13 +196,19 @@ export const selectors = { selectedSites };
 
 const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   useEffect(() => {
-    const url = `${API_ROOT}?url=${Array.from(state.selectedUrls).join(",")}`;
-    fetch(url)
+    const urlsWithoutData = Array.from(state.selectedUrls).filter(
+      (url) => !state.sites[url]
+    );
+
+    if (!urlsWithoutData.length) return;
+
+    const requestUrl = `${API_ROOT}?url=${urlsWithoutData.join(",")}`;
+    fetch(requestUrl)
       .then((res) => res.json())
       .then((data) => {
         dispatch(actions.receiveSites(keyBy(data, "url")));
       });
-  }, [dispatch, state.selectedUrls]);
+  }, [dispatch, state.selectedUrls, state.sites]);
 };
 
 export const effects = { useSelectedSites };
