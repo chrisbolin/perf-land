@@ -68,9 +68,11 @@ interface State {
   search: string;
 }
 
+const initialPreset = "fast food";
+
 export const initialState: State = {
-  selectedUrls: new Set(presets.airlines),
-  highlightedUrl: presets.airlines[0],
+  selectedUrls: new Set(presets[initialPreset]),
+  highlightedUrl: presets[initialPreset][0],
   sites: {},
   urls: [],
   search: "",
