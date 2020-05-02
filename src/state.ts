@@ -33,7 +33,7 @@ export const presets = {
     "https://www.instagram.com/",
     "https://www.pinterest.com/",
   ],
-  lululemon: [
+  shopping: [
     "https://shop.lululemon.com/",
     "https://www.target.com/",
     "https://www.nike.com/",
@@ -50,13 +50,13 @@ export interface Site {
   [otherKey: string]: string;
 }
 
-export interface Sites {
+interface SitesMap {
   [key: string]: Site;
 }
 
 interface State {
   highlightedUrl: string;
-  sites: Sites;
+  sites: SitesMap;
   urls: string[];
   selectedUrls: Set<string>;
 }
@@ -82,7 +82,7 @@ interface StringAction {
   payload: string;
 }
 
-export type PresetName = "airlines" | "news" | "social media" | "lululemon";
+export type PresetName = "airlines" | "news" | "social media" | "shopping";
 
 interface SelectPresetAction {
   type: typeof SELECT_PRESET_URLS;
@@ -91,7 +91,7 @@ interface SelectPresetAction {
 
 interface ReceiveSitesAction {
   type: typeof RECEIVE_SITES;
-  payload: Sites;
+  payload: SitesMap;
 }
 
 type Action =
@@ -167,7 +167,7 @@ const selectPresetUrls = (presetName: PresetName) => ({
   payload: presetName,
 });
 
-export const receiveSites = (sites: Sites) => ({
+export const receiveSites = (sites: SitesMap) => ({
   type: RECEIVE_SITES as typeof RECEIVE_SITES,
   payload: sites,
 });

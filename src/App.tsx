@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useReducer } from "react";
 import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 
