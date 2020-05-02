@@ -34,6 +34,15 @@ export const presets = {
     "https://www.amazon.com/",
     "https://www.mercadolivre.com.br/",
   ],
+  "fast food": [
+    "https://www.bk.com/",
+    "https://www.popeyes.com/",
+    "https://www.starbucks.com/",
+    "https://www.timhortons.ca/",
+    "https://www.mcdonalds.com/",
+    "https://www.wendys.com/",
+    "https://www.dominos.com/",
+  ],
 };
 
 interface Site {
@@ -91,7 +100,12 @@ interface StringAction {
   payload: string;
 }
 
-export type PresetName = "airlines" | "news" | "social media" | "shopping";
+export type PresetName =
+  | "airlines"
+  | "news"
+  | "social media"
+  | "shopping"
+  | "fast food";
 
 interface SelectPresetAction {
   type: typeof SELECT_PRESET_URLS;
