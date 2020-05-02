@@ -3,7 +3,7 @@ import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 
 import {
-  Site,
+  AugmentedSite,
   PresetName,
   reducer,
   initialState,
@@ -29,7 +29,7 @@ function SelectedRecord({
   onHighlightClick,
   onHighlightRemoveClick,
 }: {
-  record: Site;
+  record: AugmentedSite;
   highlighted: boolean;
   onRemoveClick: EventCallbackFunction;
   onHighlightClick: EventCallbackFunction;
@@ -40,7 +40,7 @@ function SelectedRecord({
       className="SelectedRecord"
       style={{ fontWeight: highlighted ? "bold" : "normal" }}
     >
-      {record.url}
+      {record.name}
       <button onClick={onRemoveClick}>X</button>
       {!highlighted && <button onClick={onHighlightClick}>highlight</button>}
       {highlighted && (
@@ -50,10 +50,10 @@ function SelectedRecord({
   );
 }
 
-function RecordDetails({ record }: { record: Site }) {
+function RecordDetails({ record }: { record: AugmentedSite }) {
   return (
     <div className="RecordDetails">
-      <h4>{record.url}</h4>
+      <h4>{record.name}</h4>
       <ul>
         <li>cdn: {record.cdn || "none"}</li>
         <li>
@@ -73,7 +73,7 @@ function Chart({
   reverse = false,
   yTransform = (x) => x,
 }: {
-  records: Site[];
+  records: AugmentedSite[];
   field: string;
   name: string;
   highlightedUrl: string;
@@ -84,7 +84,7 @@ function Chart({
 
   const data = records
     .map((record) => ({
-      x: record.url,
+      x: record.name,
       y: yTransform(parseFloat(record[field])) || 0,
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));

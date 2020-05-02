@@ -43,11 +43,15 @@ export const presets = {
   ],
 };
 
-export interface Site {
+interface Site {
   url: string;
   cdn: string;
   startedDateTime: string;
   [otherKey: string]: string;
+}
+
+export interface AugmentedSite extends Site {
+  name: string;
 }
 
 interface SitesMap {
@@ -184,11 +188,24 @@ export const actions = {
 
 // selectors
 
-const selectedSites = (state: State) =>
-  Array.from(state.selectedUrls.keys()).flatMap((url) => {
-    const site = state.sites[url];
-    return site ? [site] : [];
-  });
+const augmentSite = (site: Site): AugmentedSite => {
+  const name = site.url
+    .replace(/http.*:\/\//, "") // remove protocol
+    .replace(/\/$/, ""); // remove trailing slash
+
+  return {
+    ...site,
+    name,
+  };
+};
+
+const selectedSites = (state: State): AugmentedSite[] =>
+  Array.from(state.selectedUrls.keys())
+    .flatMap((url) => {
+      const site = state.sites[url];
+      return site ? [site] : [];
+    })
+    .map(augmentSite);
 
 export const selectors = { selectedSites };
 
