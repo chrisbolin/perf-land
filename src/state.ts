@@ -1,3 +1,9 @@
+import { keyBy } from "lodash";
+import { useEffect } from "react";
+
+const API_ROOT =
+  "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
+
 const RECEIVE_SITES = "RECEIVE_SITES";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
 const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
@@ -7,33 +13,33 @@ const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
 
 export const presets = {
   airlines: [
-    "www.united.com",
-    "www.southwest.com",
-    "www.delta.com",
-    "www.jetblue.com",
-    "www.alaskaair.com",
-    "www.flyfrontier.com",
+    "https://www.united.com/",
+    "https://www.southwest.com/",
+    "https://www.delta.com/",
+    "https://www.jetblue.com/",
+    "https://m.alaskaair.com/",
+    "https://www.flyfrontier.com/",
   ],
   news: [
-    "www.aljazeera.com",
-    "www.latimes.com",
-    "app.nytimes.com",
-    "www.theatlantic.com",
-    "www.bbc.co.uk",
+    "https://www.aljazeera.com/",
+    "https://www.latimes.com/",
+    "https://app.nytimes.com/",
+    "https://www.theatlantic.com/",
+    "https://www.bbc.co.uk/",
   ],
   "social media": [
-    "m.facebook.com",
-    "twitter.com",
-    "www.instagram.com",
-    "www.pinterest.com",
+    "https://m.facebook.com/",
+    "https://twitter.com/",
+    "https://www.instagram.com/",
+    "https://www.pinterest.com/",
   ],
   lululemon: [
-    "shop.lululemon.com",
-    "www.target.com",
-    "www.nike.com",
-    "shop.nordstrom.com",
-    "www.amazon.com",
-    "www.mercadolivre.com.br",
+    "https://shop.lululemon.com/",
+    "https://www.target.com/",
+    "https://www.nike.com/",
+    "https://shop.nordstrom.com/",
+    "https://www.amazon.com/",
+    "https://www.mercadolivre.com.br/",
   ],
 };
 
@@ -54,6 +60,15 @@ interface State {
   urls: string[];
   selectedUrls: Set<string>;
 }
+
+export const initialState: State = {
+  selectedUrls: new Set(presets.airlines),
+  highlightedUrl: presets.airlines[0],
+  sites: {},
+  urls: [],
+};
+
+// action types
 
 interface BareAction {
   type: typeof CLEAR_ALL_SELECTED_URLS;
@@ -84,6 +99,8 @@ type Action =
   | SelectPresetAction
   | StringAction
   | BareAction;
+
+// reducer
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -118,6 +135,8 @@ export function reducer(state: State, action: Action): State {
     }
   }
 }
+
+// actions
 
 const changeHighlightSite = (url: string) => ({
   type: CHANGE_HIGHLIGHTED_URL as typeof CHANGE_HIGHLIGHTED_URL,
@@ -163,14 +182,27 @@ export const actions = {
   receiveSites,
 };
 
+// selectors
+
 const selectedSites = (state: State) =>
-  Array.from(state.selectedUrls.keys()).map((url) => state.sites[url]);
+  Array.from(state.selectedUrls.keys()).flatMap((url) => {
+    const site = state.sites[url];
+    return site ? [site] : [];
+  });
 
 export const selectors = { selectedSites };
 
-export const initialState: State = {
-  highlightedUrl: "",
-  sites: {},
-  urls: [],
-  selectedUrls: new Set(),
+// effects
+
+const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
+  useEffect(() => {
+    const url = `${API_ROOT}?url=${Array.from(state.selectedUrls).join(",")}`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        dispatch(actions.receiveSites(keyBy(data, "url")));
+      });
+  }, [dispatch, state.selectedUrls]);
 };
+
+export const effects = { useSelectedSites };
