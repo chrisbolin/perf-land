@@ -1,5 +1,5 @@
 import React, { useReducer } from "react";
-import AsyncSelect from "react-select/async";
+import Select from "react-select";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 
 import {
@@ -16,11 +16,6 @@ import "./App.css";
 
 type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 type IdentityFunction = (x: number) => number;
-
-function urlMatches(searchString: string, urls: string[]) {
-  const MAX_RESULTS = 100;
-  return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
-}
 
 function SelectedSite({
   site,
@@ -125,22 +120,6 @@ function App() {
 
   effects.useSelectedSites(state, dispatch);
 
-  // search
-
-  const loadOptions = (inputValue: string, callback: Function) => {
-    const MIN_INPUT = 3;
-    if (inputValue.length < MIN_INPUT) {
-      callback([]);
-    } else {
-      callback(
-        urlMatches(inputValue, urls).map((url) => ({
-          value: url,
-          label: url,
-        }))
-      );
-    }
-  };
-
   return (
     <div className="App">
       <h1>perf land</h1>
@@ -168,14 +147,20 @@ function App() {
       {!urls.length && <p>loading...</p>}
       {!!urls.length && (
         <div>
-          <AsyncSelect
+          <Select
             className="UrlSelect"
-            loadOptions={loadOptions}
+            options={state.urls.map((url) => ({ value: url, label: url }))}
             onChange={(option) => {
               if (!option || "length" in option) return;
               dispatch(actions.addUrl(option.value));
             }}
+            onInputChange={(input: string) => {
+              effects.searchForUrls(state, dispatch, input);
+            }}
+            inputValue={state.search}
             placeholder="Add website..."
+            // isLoading
+            // loadingMessage={() => "loading"}
           />
           {selectedSites.map((site) => (
             <SelectedSite
