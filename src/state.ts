@@ -109,11 +109,12 @@ type Action =
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case RECEIVE_SITES: {
-      const sites = keyBy(action.payload, "url");
+      const newSites = keyBy(action.payload, "url");
+      const newUrls = Object.keys(newSites);
       return {
         ...state,
-        sites: { ...state.sites, ...sites },
-        urls: Object.keys(sites),
+        sites: { ...state.sites, ...newSites },
+        urls: [...state.urls, ...newUrls],
       };
     }
     case ADD_SELECTED_URL: {
