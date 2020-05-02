@@ -22,14 +22,14 @@ function urlMatches(searchString: string, urls: string[]) {
   return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
 }
 
-function SelectedRecord({
-  record,
+function SelectedSite({
+  site,
   onRemoveClick,
   highlighted,
   onHighlightClick,
   onHighlightRemoveClick,
 }: {
-  record: AugmentedSite;
+  site: AugmentedSite;
   highlighted: boolean;
   onRemoveClick: EventCallbackFunction;
   onHighlightClick: EventCallbackFunction;
@@ -37,10 +37,10 @@ function SelectedRecord({
 }) {
   return (
     <div
-      className="SelectedRecord"
+      className="SelectedSite"
       style={{ fontWeight: highlighted ? "bold" : "normal" }}
     >
-      {record.name}
+      {site.name}
       <button onClick={onRemoveClick}>X</button>
       {!highlighted && <button onClick={onHighlightClick}>highlight</button>}
       {highlighted && (
@@ -50,15 +50,15 @@ function SelectedRecord({
   );
 }
 
-function RecordDetails({ record }: { record: AugmentedSite }) {
+function SiteDetails({ site }: { site: AugmentedSite }) {
   return (
-    <div className="RecordDetails">
-      <h4>{record.name}</h4>
+    <div className="SiteDetails">
+      <h4>{site.name}</h4>
       <ul>
-        <li>cdn: {record.cdn || "none"}</li>
+        <li>cdn: {site.cdn || "none"}</li>
         <li>
           profile time, local time:{" "}
-          {new Date(parseInt(record.startedDateTime) * 1000).toLocaleString()}
+          {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString()}
         </li>
       </ul>
     </div>
@@ -66,26 +66,27 @@ function RecordDetails({ record }: { record: AugmentedSite }) {
 }
 
 function Chart({
-  records,
+  sites,
   field,
   name,
   highlightedUrl,
   reverse = false,
   yTransform = (x) => x,
 }: {
-  records: AugmentedSite[];
+  sites: AugmentedSite[];
   field: string;
   name: string;
   highlightedUrl: string;
   reverse?: boolean;
   yTransform?: IdentityFunction;
 }) {
-  if (!records.length) return null;
+  if (!sites.length) return null;
 
-  const data = records
-    .map((record) => ({
-      x: record.name,
-      y: yTransform(parseFloat(record[field])) || 0,
+  const data = sites
+    .map((site) => ({
+      url: site.url,
+      x: site.name,
+      y: yTransform(parseFloat(site[field])) || 0,
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
 
@@ -103,7 +104,7 @@ function Chart({
           data={data}
           style={{
             data: {
-              fill: ({ datum }) => (datum.x === highlightedUrl ? "blue" : ""),
+              fill: ({ datum }) => (datum.url === highlightedUrl ? "blue" : ""),
             },
           }}
         />
@@ -116,9 +117,9 @@ function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { highlightedUrl, urls } = state;
-  const currentlySelectedRecords = selectors.selectedSites(state);
+  const selectedSites = selectors.selectedSites(state);
 
-  console.log(state, { currentlySelectedRecords });
+  console.log(state, { selectedSites });
 
   // effects
 
@@ -176,14 +177,14 @@ function App() {
             }}
             placeholder="Add website..."
           />
-          {currentlySelectedRecords.map((record) => (
-            <SelectedRecord
-              key={record.url}
-              record={record}
-              onRemoveClick={() => dispatch(actions.removeUrl(record.url))}
-              highlighted={record.url === highlightedUrl}
+          {selectedSites.map((site) => (
+            <SelectedSite
+              key={site.url}
+              site={site}
+              onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
+              highlighted={site.url === highlightedUrl}
               onHighlightClick={() =>
-                dispatch(actions.changeHighlightSite(record.url))
+                dispatch(actions.changeHighlightSite(site.url))
               }
               onHighlightRemoveClick={() =>
                 dispatch(actions.removeHighlightSite())
@@ -208,88 +209,88 @@ function App() {
           </div>
         </div>
       )}
-      {!!currentlySelectedRecords.length && <h1>charts</h1>}
+      {!!selectedSites.length && <h1>charts</h1>}
       <div className="charts">
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Time to first byte (ms)"
           field="TTFB"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="First contentful paint (ms)"
           field="firstContentfulPaint"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="First meaningful paint (ms)"
           field="firstMeaningfulPaint"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="First cpu idle (ms)"
           field="firstCPUIdle"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Time to interactive (ms)"
           field="timeToInteractive"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Max potential first input delay (ms)"
           field="maxPotentialFirstInputDelay"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Speed index"
           field="speedIndex"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Lighthouse performance score"
           field="performanceScore"
           highlightedUrl={highlightedUrl}
           reverse
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="JavaScript payload (kB)"
           field="bytesJS"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Image payload (kB)"
           field="bytesImg"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Total request payload (kB)"
           field="bytesTotal"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
-          records={currentlySelectedRecords}
+          sites={selectedSites}
           name="Number of requests"
           field="reqTotal"
           highlightedUrl={highlightedUrl}
         />
       </div>
-      {!!currentlySelectedRecords.length && <h1>details</h1>}
-      {currentlySelectedRecords.map((record) => (
-        <RecordDetails key={record.url} record={record} />
+      {!!selectedSites.length && <h1>details</h1>}
+      {selectedSites.map((site) => (
+        <SiteDetails key={site.url} site={site} />
       ))}
     </div>
   );
