@@ -1,4 +1,4 @@
-import { keyBy, union } from "lodash";
+import { keyBy, orderBy, union } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -133,12 +133,15 @@ type Action =
 
 // reducer
 
+const mergeUrlLists = (listA: string[], listB: string[]) =>
+  orderBy(union(listA, listB), "length");
+
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case RECEIVE_URLS: {
       return {
         ...state,
-        urls: union([...state.urls, ...action.payload]),
+        urls: mergeUrlLists(state.urls, action.payload),
       };
     }
     case RECEIVE_SITES: {
@@ -148,7 +151,7 @@ export function reducer(state: State, action: Action): State {
       return {
         ...state,
         sites: { ...state.sites, ...newSites },
-        urls: union([...state.urls, ...newUrls]),
+        urls: mergeUrlLists(state.urls, newUrls),
       };
     }
     case ADD_SELECTED_URL: {
