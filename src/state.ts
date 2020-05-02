@@ -1,4 +1,4 @@
-import { keyBy } from "lodash";
+import { keyBy, union } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -111,10 +111,11 @@ export function reducer(state: State, action: Action): State {
     case RECEIVE_SITES: {
       const newSites = keyBy(action.payload, "url");
       const newUrls = Object.keys(newSites);
+
       return {
         ...state,
         sites: { ...state.sites, ...newSites },
-        urls: [...state.urls, ...newUrls],
+        urls: union([...state.urls, ...newUrls]),
       };
     }
     case ADD_SELECTED_URL: {
