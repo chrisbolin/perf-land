@@ -26,4 +26,4 @@ const request = {
   },
 };
 
-main(request, new Response());
+main(request, new Response()).then((connection) => connection.destroy());
