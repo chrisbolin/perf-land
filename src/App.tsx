@@ -3,41 +3,23 @@ import { parse } from "papaparse";
 import { keyBy } from "lodash";
 import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
+
+import {
+  Site,
+  Sites,
+  PresetName,
+  reducer,
+  initialState,
+  selectors,
+  actions,
+  presets,
+} from "./state";
 import "./App.css";
 
-const DATA_PATH = "/dump007.csv";
+type EventCallbackFunction = (event: React.SyntheticEvent) => void;
+type IdentityFunction = (x: number) => number;
 
-const presets = {
-  airlines: [
-    "www.united.com",
-    "www.southwest.com",
-    "www.delta.com",
-    "www.jetblue.com",
-    "www.alaskaair.com",
-    "www.flyfrontier.com",
-  ],
-  news: [
-    "www.aljazeera.com",
-    "www.latimes.com",
-    "app.nytimes.com",
-    "www.theatlantic.com",
-    "www.bbc.co.uk",
-  ],
-  "social media": [
-    "m.facebook.com",
-    "twitter.com",
-    "www.instagram.com",
-    "www.pinterest.com",
-  ],
-  lululemon: [
-    "shop.lululemon.com",
-    "www.target.com",
-    "www.nike.com",
-    "shop.nordstrom.com",
-    "www.amazon.com",
-    "www.mercadolivre.com.br",
-  ],
-};
+const DATA_PATH = "/dump007.csv";
 
 function downloadRecords() {
   return new Promise((resolve, reject) => {
@@ -58,14 +40,6 @@ function urlMatches(searchString: string, urls: string[]) {
   const MAX_RESULTS = 100;
   return urls.filter((url) => url.includes(searchString)).slice(0, MAX_RESULTS);
 }
-
-function selectSelectedSite(state: State) {
-  return Array.from(state.selectedUrls.keys()).map((url) => {
-    return state.sites[url];
-  });
-}
-
-type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 
 function SelectedRecord({
   record,
@@ -109,8 +83,6 @@ function RecordDetails({ record }: { record: Site }) {
     </div>
   );
 }
-
-type IdentityFunction = (x: number) => number;
 
 function Chart({
   records,
@@ -159,154 +131,20 @@ function Chart({
   );
 }
 
-const RECEIVE_SITES = "RECEIVE_SITES";
-const ADD_SELECTED_URL = "ADD_SELECTED_URL";
-const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
-const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
-const SELECT_PRESET_URLS = "SELECT_PRESET_URLS";
-const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
-
-interface Site {
-  url: string;
-  cdn: string;
-  startedDateTime: string;
-  [otherKey: string]: string;
-}
-
-interface Sites {
-  [key: string]: Site;
-}
-
-interface State {
-  highlightedUrl: string;
-  sites: Sites;
-  urls: string[];
-  selectedUrls: Set<string>;
-}
-
-interface BareAction {
-  type: typeof CLEAR_ALL_SELECTED_URLS;
-}
-
-interface StringAction {
-  type:
-    | typeof ADD_SELECTED_URL
-    | typeof REMOVE_SELECTED_URL
-    | typeof CHANGE_HIGHLIGHTED_URL;
-  payload: string;
-}
-
-type PresetName = "airlines" | "news" | "social media" | "lululemon";
-
-interface SelectPresetAction {
-  type: typeof SELECT_PRESET_URLS;
-  payload: PresetName;
-}
-
-interface ReceiveSitesAction {
-  type: typeof RECEIVE_SITES;
-  payload: Sites;
-}
-
-type Action =
-  | ReceiveSitesAction
-  | SelectPresetAction
-  | StringAction
-  | BareAction;
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case RECEIVE_SITES: {
-      const sites = action.payload;
-      return {
-        ...state,
-        sites: { ...state.sites, ...sites },
-        urls: Object.keys(sites),
-      };
-    }
-    case ADD_SELECTED_URL: {
-      const selectedUrls = new Set(state.selectedUrls);
-      selectedUrls.add(action.payload);
-      return { ...state, selectedUrls };
-    }
-    case REMOVE_SELECTED_URL: {
-      const selectedUrls = new Set(state.selectedUrls);
-      selectedUrls.delete(action.payload);
-      return { ...state, selectedUrls };
-    }
-    case CLEAR_ALL_SELECTED_URLS: {
-      return { ...state, selectedUrls: new Set() };
-    }
-    case SELECT_PRESET_URLS: {
-      const urls = presets[action.payload];
-      const selectedUrls = new Set(urls);
-      return { ...state, selectedUrls, highlightedUrl: urls[0] };
-    }
-    case CHANGE_HIGHLIGHTED_URL: {
-      return { ...state, highlightedUrl: action.payload };
-    }
-  }
-}
-
-const initialState: State = {
-  highlightedUrl: "",
-  sites: {},
-  urls: [],
-  selectedUrls: new Set(),
-};
-
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { highlightedUrl, urls } = state;
-  const currentlySelectedRecords = selectSelectedSite(state);
+  const currentlySelectedRecords = selectors.selectedSites(state);
 
   console.log(state);
-
-  // reducer state
-
-  const changeHighlightSite = (url: string) =>
-    dispatch({
-      type: CHANGE_HIGHLIGHTED_URL,
-      payload: url,
-    });
-
-  const removeHighlightSite = () =>
-    dispatch({
-      type: CHANGE_HIGHLIGHTED_URL,
-      payload: "",
-    });
-
-  const addUrl = (url: string) =>
-    dispatch({
-      type: ADD_SELECTED_URL,
-      payload: url,
-    });
-
-  const removeUrl = (url: string) =>
-    dispatch({
-      type: REMOVE_SELECTED_URL,
-      payload: url,
-    });
-
-  const clearAllSelectedUrls = () =>
-    dispatch({ type: CLEAR_ALL_SELECTED_URLS });
-
-  const selectPresetUrls = (presetName: PresetName) =>
-    dispatch({ type: SELECT_PRESET_URLS, payload: presetName });
-
-  const receiveSites = (sites: Sites) =>
-    dispatch({
-      type: RECEIVE_SITES,
-      payload: sites,
-    });
 
   // effects
 
   useEffect(() => {
-    downloadRecords().then((records) => {
-      receiveSites(records as Sites);
-      selectPresetUrls("airlines");
+    downloadRecords().then((sites) => {
+      dispatch(actions.receiveSites(sites as Sites));
+      dispatch(actions.selectPresetUrls("airlines"));
     });
   }, []);
 
@@ -326,7 +164,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>performance comparison</h1>
+      <h1>perf land</h1>
       <p>
         <ul>
           <li>note: this is a demo. be aware of sharp edges</li>
@@ -356,7 +194,7 @@ function App() {
             loadOptions={loadOptions}
             onChange={(option) => {
               if (!option || "length" in option) return;
-              addUrl(option.value);
+              dispatch(actions.addUrl(option.value));
             }}
             placeholder="Add website..."
           />
@@ -364,19 +202,27 @@ function App() {
             <SelectedRecord
               key={record.url}
               record={record}
-              onRemoveClick={() => removeUrl(record.url)}
+              onRemoveClick={() => dispatch(actions.removeUrl(record.url))}
               highlighted={record.url === highlightedUrl}
-              onHighlightClick={() => changeHighlightSite(record.url)}
-              onHighlightRemoveClick={removeHighlightSite}
+              onHighlightClick={() =>
+                dispatch(actions.changeHighlightSite(record.url))
+              }
+              onHighlightRemoveClick={() =>
+                dispatch(actions.removeHighlightSite())
+              }
             />
           ))}
-          <button onClick={clearAllSelectedUrls}>clear</button>
+          <button onClick={() => dispatch(actions.clearAllSelectedUrls())}>
+            clear
+          </button>
           <div>
             <b>presets:</b>
             {Object.keys(presets).map((presetKey) => (
               <button
                 key={presetKey}
-                onClick={() => selectPresetUrls(presetKey as PresetName)}
+                onClick={() =>
+                  dispatch(actions.selectPresetUrls(presetKey as PresetName))
+                }
               >
                 {presetKey}
               </button>
