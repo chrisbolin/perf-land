@@ -1,4 +1,4 @@
-import { keyBy, orderBy, union } from "lodash";
+import { debounce, keyBy, orderBy, union } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -272,6 +272,8 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
 const SEARCH_RESULTS_COUNT_THRESHOLD = 10;
 const MIN_SEARCH_STRING_LENGTH = 5;
 
+const debounceSearchNetworkRequest = debounce((fun) => fun(), 150);
+
 const searchForUrls = (
   state: State,
   dispatch: React.Dispatch<Action>,
@@ -288,14 +290,16 @@ const searchForUrls = (
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
   const requestUrl = `${API_ROOT}?search=${search}`;
-  fetch(requestUrl)
-    .then((res) => res.json())
-    .then((urls) => {
-      dispatch({
-        type: RECEIVE_URLS,
-        payload: urls,
-      });
-    });
+  debounceSearchNetworkRequest(() =>
+    fetch(requestUrl)
+      .then((res) => res.json())
+      .then((urls) => {
+        dispatch({
+          type: RECEIVE_URLS,
+          payload: urls,
+        });
+      })
+  );
 };
 
 export const effects = { useSelectedSites, searchForUrls };
