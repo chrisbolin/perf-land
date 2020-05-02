@@ -91,7 +91,7 @@ interface SelectPresetAction {
 
 interface ReceiveSitesAction {
   type: typeof RECEIVE_SITES;
-  payload: SitesMap;
+  payload: Site[];
 }
 
 type Action =
@@ -105,7 +105,7 @@ type Action =
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case RECEIVE_SITES: {
-      const sites = action.payload;
+      const sites = keyBy(action.payload, "url");
       return {
         ...state,
         sites: { ...state.sites, ...sites },
@@ -167,7 +167,7 @@ const selectPresetUrls = (presetName: PresetName) => ({
   payload: presetName,
 });
 
-export const receiveSites = (sites: SitesMap) => ({
+export const receiveSites = (sites: Site[]) => ({
   type: RECEIVE_SITES as typeof RECEIVE_SITES,
   payload: sites,
 });
@@ -206,7 +206,7 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
     fetch(requestUrl)
       .then((res) => res.json())
       .then((data) => {
-        dispatch(actions.receiveSites(keyBy(data, "url")));
+        dispatch(actions.receiveSites(data));
       });
   }, [dispatch, state.selectedUrls, state.sites]);
 };
