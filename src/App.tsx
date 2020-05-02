@@ -1,40 +1,21 @@
 import React, { useEffect, useReducer } from "react";
-import { parse } from "papaparse";
-import { keyBy } from "lodash";
 import AsyncSelect from "react-select/async";
 import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 
 import {
   Site,
-  Sites,
   PresetName,
   reducer,
   initialState,
   selectors,
   actions,
   presets,
+  effects,
 } from "./state";
 import "./App.css";
 
 type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 type IdentityFunction = (x: number) => number;
-
-const DATA_PATH = "/dump007.csv";
-
-function downloadRecords() {
-  return new Promise((resolve, reject) => {
-    console.time("download");
-    parse(DATA_PATH, {
-      download: true,
-      header: true,
-      complete: (results) => {
-        console.timeEnd("download");
-        resolve(keyBy(results.data, "url"));
-      },
-      error: (error) => reject(error),
-    });
-  });
-}
 
 function urlMatches(searchString: string, urls: string[]) {
   const MAX_RESULTS = 100;
@@ -137,16 +118,13 @@ function App() {
   const { highlightedUrl, urls } = state;
   const currentlySelectedRecords = selectors.selectedSites(state);
 
-  console.log(state);
+  console.log(state, { currentlySelectedRecords });
 
   // effects
 
-  useEffect(() => {
-    downloadRecords().then((sites) => {
-      dispatch(actions.receiveSites(sites as Sites));
-      dispatch(actions.selectPresetUrls("airlines"));
-    });
-  }, []);
+  effects.useSelectedSites(state, dispatch);
+
+  // search
 
   const loadOptions = (inputValue: string, callback: Function) => {
     const MIN_INPUT = 3;
@@ -165,7 +143,7 @@ function App() {
   return (
     <div className="App">
       <h1>perf land</h1>
-      <p>
+      <div>
         <ul>
           <li>note: this is a demo. be aware of sharp edges</li>
           <li>select some websites to compare</li>
@@ -184,7 +162,7 @@ function App() {
             </a>
           </li>
         </ul>
-      </p>
+      </div>
       <h1>websites</h1>
       {!urls.length && <p>loading...</p>}
       {!!urls.length && (
@@ -307,7 +285,6 @@ function App() {
           name="Number of requests"
           field="reqTotal"
           highlightedUrl={highlightedUrl}
-          yTransform={(y) => Math.round(y / 1000)}
         />
       </div>
       {!!currentlySelectedRecords.length && <h1>details</h1>}
