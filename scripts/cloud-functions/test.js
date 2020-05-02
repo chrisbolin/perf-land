@@ -1,7 +1,5 @@
 const main = require("./function").main;
 
-// res.status(200).send(payload);
-
 function Response() {
   this.result = {};
 
@@ -12,7 +10,18 @@ function Response() {
     return this;
   };
 
+  this.header = (header, value) => {
+    this.result["header: " + header] = value;
+    return this;
+  };
+
   this.send = (payload) => {
+    this.result.payload = payload;
+    console.log(this.result);
+    return this;
+  };
+
+  this.json = (payload) => {
     this.result.payload = payload;
     console.log(this.result);
     return this;

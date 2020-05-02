@@ -31,8 +31,7 @@ function getPages(connection, res, urls) {
     .whereIn("url", urls)
     .orderBy("startedDateTime", "desc")
     .then((rows) => {
-      const payload = JSON.stringify(rows, null, 2);
-      res.status(200).send(payload);
+      res.status(200).json(rows);
     });
 }
 
@@ -44,8 +43,7 @@ function searchUrls(connection, res, search) {
     .limit(SEARCH_RESULTS_MAX)
     .then((rows) => {
       const urls = rows.map((row) => row.url);
-      const payload = JSON.stringify(urls, null, 2);
-      res.status(200).send(payload);
+      res.status(200).json(urls);
     });
 }
 
@@ -86,6 +84,9 @@ function requestType(query) {
  */
 function main(req, res) {
   let type, data;
+
+  res.header("Access-Control-Allow-Origin", "*");
+
   try {
     [type, data] = requestType(req.query);
   } catch (error) {
