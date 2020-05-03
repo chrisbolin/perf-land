@@ -3,6 +3,9 @@ import { useEffect } from "react";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
+const SEARCH_RESULTS_COUNT_THRESHOLD = 10;
+const MIN_SEARCH_STRING_LENGTH = 5;
+const DEBOUNCE_SEARCH_TIME_MS = 150;
 
 export const presets = {
   airlines: [
@@ -269,10 +272,10 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   }, [dispatch, state.selectedUrls, state.sites]);
 };
 
-const SEARCH_RESULTS_COUNT_THRESHOLD = 10;
-const MIN_SEARCH_STRING_LENGTH = 5;
-
-const debounceSearchNetworkRequest = debounce((fun) => fun(), 150);
+const debounceSearchNetworkRequest = debounce(
+  (fun) => fun(),
+  DEBOUNCE_SEARCH_TIME_MS
+);
 
 const searchForUrls = (
   state: State,
