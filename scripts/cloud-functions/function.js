@@ -3,9 +3,9 @@ const knex = require("knex");
 const SEARCH_TYPE = "SEARCH_TYPE";
 const GET_PAGES_TYPE = "GET_PAGES_TYPE";
 
-const URL_COUNT_MAX = 100;
-const SEARCH_STRING_MIN = 3;
-const SEARCH_RESULTS_MAX = 50;
+const INPUT_URL_COUNT_MAX = 100;
+const INPUT_SEARCH_STRING_MIN = 5;
+const OUTPUT_SEARCH_RESULTS_MAX = 10;
 
 /*
   place connection in global scope to cache it
@@ -48,7 +48,7 @@ function searchUrls(connection, res, search) {
     .select("url")
     .from("page_runs")
     .where("url", "like", `%${search}%`)
-    .limit(SEARCH_RESULTS_MAX)
+    .limit(OUTPUT_SEARCH_RESULTS_MAX)
     .then((rows) => {
       const urls = rows.map((row) => row.url);
       cacheResponse(res, 3);
@@ -71,14 +71,14 @@ function requestType(query) {
   const { search, url } = query;
 
   if (search) {
-    if (search.length < SEARCH_STRING_MIN)
+    if (search.length < INPUT_SEARCH_STRING_MIN)
       throw new Error("Search not long enough");
     return [SEARCH_TYPE, search];
   }
 
   if (url) {
     const urls = url.split(",");
-    if (urls.length > URL_COUNT_MAX) throw new Error("Too many URLs");
+    if (urls.length > INPUT_URL_COUNT_MAX) throw new Error("Too many URLs");
     return [GET_PAGES_TYPE, urls];
   }
 
