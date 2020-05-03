@@ -24,6 +24,13 @@ const connection = knex({
   },
 });
 
+function cacheResponse(res, daysInCache) {
+  return res.header(
+    "Cache-Control",
+    `public, max-age=${daysInCache * 24 * 60 * 60}`
+  );
+}
+
 function getPages(connection, res, urls) {
   return connection
     .select("*")
@@ -31,6 +38,7 @@ function getPages(connection, res, urls) {
     .whereIn("url", urls)
     .orderBy("startedDateTime", "desc")
     .then((rows) => {
+      cacheResponse(res, 10);
       res.status(200).json(rows);
     });
 }
@@ -43,6 +51,7 @@ function searchUrls(connection, res, search) {
     .limit(SEARCH_RESULTS_MAX)
     .then((rows) => {
       const urls = rows.map((row) => row.url);
+      cacheResponse(res, 3);
       res.status(200).json(urls);
     });
 }
