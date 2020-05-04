@@ -158,6 +158,7 @@ function App() {
               effects.searchForUrls(state, dispatch, input);
             }}
             inputValue={state.search}
+            value={null}
             placeholder="Add website..."
             // isLoading
             // loadingMessage={() => "loading"}
