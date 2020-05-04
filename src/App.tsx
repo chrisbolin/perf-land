@@ -50,9 +50,10 @@ function SiteDetails({ site }: { site: AugmentedSite }) {
     <div className="SiteDetails">
       <h4>{site.name}</h4>
       <ul>
+        <li>full URL: {site.url}</li>
         <li>cdn: {site.cdn || "none"}</li>
         <li>
-          profile time, local time:{" "}
+          profile time:{" "}
           {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString()}
         </li>
       </ul>

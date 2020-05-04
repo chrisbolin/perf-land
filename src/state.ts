@@ -1,5 +1,6 @@
 import { debounce, keyBy, orderBy, union } from "lodash";
 import { useEffect } from "react";
+import { url } from "inspector";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
@@ -233,9 +234,13 @@ export const actions = {
 // selectors
 
 const augmentSite = (site: Site): AugmentedSite => {
-  const name = site.url
+  let name = site.url
     .replace(/http.*:\/\//, "") // remove protocol
     .replace(/\/$/, ""); // remove trailing slash
+
+  if (site.url.startsWith("http:")) {
+    name = name + " (http)";
+  }
 
   return {
     ...site,

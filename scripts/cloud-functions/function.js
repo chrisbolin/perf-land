@@ -48,6 +48,7 @@ function searchUrls(connection, res, search) {
     .select("url")
     .from("page_runs")
     .where("url", "like", `%${search}%`)
+    .orderBy("rank2017", "asc")
     .limit(OUTPUT_SEARCH_RESULTS_MAX)
     .then((rows) => {
       const urls = rows.map((row) => row.url);
