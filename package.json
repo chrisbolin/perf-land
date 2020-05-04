@@ -32,7 +32,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "stage": "surge build/ performance-analysis.surge.sh",
+    "staging": "surge build/ perf-land.surge.sh",
+    "prod": "surge build/ perf.land",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
