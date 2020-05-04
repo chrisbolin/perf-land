@@ -161,7 +161,7 @@ export function reducer(state: State, action: Action): State {
     case ADD_SELECTED_URL: {
       const selectedUrls = new Set(state.selectedUrls);
       selectedUrls.add(action.payload);
-      return { ...state, selectedUrls };
+      return { ...state, selectedUrls, search: "" };
     }
     case REMOVE_SELECTED_URL: {
       const selectedUrls = new Set(state.selectedUrls);
