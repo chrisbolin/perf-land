@@ -98,6 +98,7 @@ function Chart({
         <VictoryAxis dependentAxis />
         <VictoryBar
           data={data}
+          barWidth={22}
           style={{
             data: {
               fill: ({ datum }) => (datum.url === highlightedUrl ? "blue" : ""),
