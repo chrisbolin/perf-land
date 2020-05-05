@@ -46,6 +46,12 @@ export const presets = {
     "https://www.wendys.com/",
     "https://www.dominos.com/",
   ],
+  "pet food": [
+    "https://www.chewy.com/",
+    "https://www.petsmart.com/",
+    "https://www.1800petmeds.com/",
+    "https://www.petflow.com/",
+  ],
 };
 
 export type PresetName = keyof typeof presets;
