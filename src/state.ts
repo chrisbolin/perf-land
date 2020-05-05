@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
-const SEARCH_RESULTS_COUNT_THRESHOLD = 10;
+const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
 
@@ -51,12 +51,35 @@ export const presets = {
 interface Site {
   url: string;
   cdn: string;
-  startedDateTime: string;
-  [otherKey: string]: string;
+  startedDateTime: number;
+  rank2017: number;
+  reqTotal: number;
+  reqHtml: number;
+  reqJS: number;
+  reqCSS: number;
+  reqImg: number;
+  bytesTotal: number;
+  bytesHtml: number;
+  bytesJS: number;
+  bytesCSS: number;
+  bytesImg: number;
+  TTFB: number;
+  performanceScore: number;
+  firstContentfulPaint: number;
+  maxPotentialFirstInputDelay: number;
+  speedIndex: number;
+  firstMeaningfulPaint: number;
+  firstCPUIdle: number;
+  timeToInteractive: number;
 }
 
 export interface AugmentedSite extends Site {
   name: string;
+}
+
+interface UrlDetails {
+  url: string;
+  rank2017: number;
 }
 
 interface SitesMap {
@@ -66,7 +89,7 @@ interface SitesMap {
 interface State {
   highlightedUrl: string;
   sites: SitesMap;
-  urls: string[];
+  urls: UrlDetails[];
   selectedUrls: Set<string>;
   search: string;
 }
@@ -124,7 +147,7 @@ interface ReceiveSitesAction {
 
 interface ReceiveUrlsAction {
   type: typeof RECEIVE_URLS;
-  payload: string[];
+  payload: UrlDetails[];
 }
 
 type Action =
@@ -136,8 +159,8 @@ type Action =
 
 // reducer
 
-const mergeUrlLists = (listA: string[], listB: string[]) =>
-  orderBy(union(listA, listB), "length");
+const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
+  orderBy(union(listA, listB), "rank2017");
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -149,7 +172,10 @@ export function reducer(state: State, action: Action): State {
     }
     case RECEIVE_SITES: {
       const newSites = keyBy(action.payload, "url");
-      const newUrls = Object.keys(newSites);
+      const newUrls = action.payload.map(({ url, rank2017 }) => ({
+        url,
+        rank2017,
+      }));
 
       return {
         ...state,
@@ -293,10 +319,10 @@ const searchForUrls = (
 
   if (search.length < MIN_SEARCH_STRING_LENGTH) return;
 
-  const found = state.urls.filter((url) => url.includes(search));
+  const found = state.urls.filter(({ url }) => url.includes(search));
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
-  const requestUrl = `${API_ROOT}?search=${search}`;
+  const requestUrl = `${API_ROOT}?search2=${search}`;
   debounceSearchNetworkRequest(() =>
     fetch(requestUrl)
       .then((res) => res.json())

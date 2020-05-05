@@ -55,12 +55,9 @@ function SiteDetails({ site }: { site: AugmentedSite }) {
       <p>cdn: {site.cdn || "none detected"}</p>
       <p>
         profile time:{" "}
-        {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString(
-          undefined,
-          {
-            timeZoneName: "short",
-          }
-        )}
+        {new Date(site.startedDateTime * 1000).toLocaleString(undefined, {
+          timeZoneName: "short",
+        })}
       </p>
     </div>
   );
@@ -75,7 +72,20 @@ function Chart({
   yTransform = (x) => x,
 }: {
   sites: AugmentedSite[];
-  field: string;
+  field:
+    | "TTFB"
+    | "firstContentfulPaint"
+    | "firstMeaningfulPaint"
+    | "firstCPUIdle"
+    | "timeToInteractive"
+    | "maxPotentialFirstInputDelay"
+    | "speedIndex"
+    | "performanceScore"
+    | "bytesJS"
+    | "bytesImg"
+    | "bytesTotal"
+    | "reqTotal";
+
   name: string;
   highlightedUrl: string;
   reverse?: boolean;
@@ -87,7 +97,7 @@ function Chart({
     .map((site) => ({
       url: site.url,
       x: site.name,
-      y: yTransform(parseFloat(site[field])) || 0,
+      y: yTransform(site[field]) || 0,
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
 
@@ -145,7 +155,7 @@ function App() {
         <div>
           <Select
             className="UrlSelect"
-            options={state.urls.map((url) => ({ value: url, label: url }))}
+            options={state.urls.map(({ url }) => ({ value: url, label: url }))}
             onChange={(option) => {
               if (!option || "length" in option) return;
               dispatch(actions.addUrl(option.value));
