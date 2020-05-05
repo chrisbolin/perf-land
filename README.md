@@ -1,3 +1,7 @@
-# Cohort - Web Performance Comparison
+# perf land
 
-demo at [performance-analysis.surge.sh](https://performance-analysis.surge.sh/)
+[perf.land](https://perf.land)
+
+Current status: demo
+
+**Issues welcome** for feature requests and bugfixes! PRs are not advised, as the code is yet not stable.
