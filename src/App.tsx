@@ -117,8 +117,6 @@ function App() {
   const { highlightedUrl, urls } = state;
   const selectedSites = selectors.selectedSites(state);
 
-  console.log(state, { selectedSites });
-
   // effects
 
   effects.useSelectedSites(state, dispatch);
