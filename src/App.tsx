@@ -49,14 +49,20 @@ function SiteDetails({ site }: { site: AugmentedSite }) {
   return (
     <div className="SiteDetails">
       <h4>{site.name}</h4>
-      <ul>
-        <li>full URL: {site.url}</li>
-        <li>cdn: {site.cdn || "none"}</li>
-        <li>
-          profile time:{" "}
-          {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString()}
-        </li>
-      </ul>
+      <p>
+        full URL: <a href={site.url}>{site.url}</a>
+      </p>
+      <p>cdn: {site.cdn || "none"}</p>
+      <p>
+        profile time:{" "}
+        {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString(
+          undefined,
+          {
+            timeZone: "UTC",
+          }
+        )}{" "}
+        UTC
+      </p>
     </div>
   );
 }
@@ -195,8 +201,8 @@ function App() {
           </div>
         </div>
       )}
-      {!!selectedSites.length && <h1>charts</h1>}
-      <div className="charts">
+      {!!selectedSites.length && <h1>comparisons</h1>}
+      <div className="columns">
         <Chart
           sites={selectedSites}
           name="Time to first byte (ms)"
@@ -274,10 +280,12 @@ function App() {
           highlightedUrl={highlightedUrl}
         />
       </div>
-      {!!selectedSites.length && <h1>details</h1>}
-      {selectedSites.map((site) => (
-        <SiteDetails key={site.url} site={site} />
-      ))}
+      {!!selectedSites.length && <h1>site details</h1>}
+      <div>
+        {selectedSites.map((site) => (
+          <SiteDetails key={site.url} site={site} />
+        ))}
+      </div>
     </div>
   );
 }
