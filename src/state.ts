@@ -1,9 +1,9 @@
-import { debounce, keyBy, orderBy, union } from "lodash";
+import { debounce, keyBy, orderBy, pick, unionBy } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
-const SEARCH_RESULTS_COUNT_THRESHOLD = 10;
+const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
 
@@ -46,17 +46,48 @@ export const presets = {
     "https://www.wendys.com/",
     "https://www.dominos.com/",
   ],
+  "pet food": [
+    "https://www.chewy.com/",
+    "https://www.petsmart.com/",
+    "https://www.1800petmeds.com/",
+    "https://www.petflow.com/",
+  ],
 };
+
+export type PresetName = keyof typeof presets;
 
 interface Site {
   url: string;
   cdn: string;
-  startedDateTime: string;
-  [otherKey: string]: string;
+  startedDateTime: number;
+  rank2017: number;
+  reqTotal: number;
+  reqHtml: number;
+  reqJS: number;
+  reqCSS: number;
+  reqImg: number;
+  bytesTotal: number;
+  bytesHtml: number;
+  bytesJS: number;
+  bytesCSS: number;
+  bytesImg: number;
+  TTFB: number;
+  performanceScore: number;
+  firstContentfulPaint: number;
+  maxPotentialFirstInputDelay: number;
+  speedIndex: number;
+  firstMeaningfulPaint: number;
+  firstCPUIdle: number;
+  timeToInteractive: number;
 }
 
 export interface AugmentedSite extends Site {
   name: string;
+}
+
+interface UrlDetails {
+  url: string;
+  rank2017: number;
 }
 
 interface SitesMap {
@@ -66,19 +97,44 @@ interface SitesMap {
 interface State {
   highlightedUrl: string;
   sites: SitesMap;
-  urls: string[];
+  urls: UrlDetails[];
   selectedUrls: Set<string>;
   search: string;
 }
 
-const initialPreset = "fast food";
+const initialPreset: PresetName = "fast food";
 
-export const initialState: State = {
+const initialState: State = {
   selectedUrls: new Set(presets[initialPreset]),
   highlightedUrl: presets[initialPreset][0],
   sites: {},
   urls: [],
   search: "",
+};
+
+const STATE_LOCAL_STORAGE_KEY = "userState";
+
+const saveUserState = (state: State) => {
+  try {
+    localStorage.setItem(
+      STATE_LOCAL_STORAGE_KEY,
+      JSON.stringify(pick(state, "highlightedUrl"))
+    );
+  } catch (e) {
+    console.error("Failed to save user state", state, e);
+  }
+};
+const loadUserState = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STATE_LOCAL_STORAGE_KEY) || "{}");
+  } catch (e) {
+    console.error("Failed to loadUserState", e);
+    return {};
+  }
+};
+
+export const initializeState = (): State => {
+  return { ...initialState, ...loadUserState() };
 };
 
 // action types
@@ -105,13 +161,6 @@ interface StringAction {
   payload: string;
 }
 
-export type PresetName =
-  | "airlines"
-  | "news"
-  | "social media"
-  | "shopping"
-  | "fast food";
-
 interface SelectPresetAction {
   type: typeof SELECT_PRESET_URLS;
   payload: PresetName;
@@ -124,7 +173,7 @@ interface ReceiveSitesAction {
 
 interface ReceiveUrlsAction {
   type: typeof RECEIVE_URLS;
-  payload: string[];
+  payload: UrlDetails[];
 }
 
 type Action =
@@ -136,10 +185,14 @@ type Action =
 
 // reducer
 
-const mergeUrlLists = (listA: string[], listB: string[]) =>
-  orderBy(union(listA, listB), "length");
+const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
+  orderBy(unionBy(listA, listB, "url"), ({ url, rank2017 }) => {
+    const httpPenalty = url.startsWith("http://") ? 1 : 0;
+    const lengthPenalty = url.length / 255;
+    return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
+  });
 
-export function reducer(state: State, action: Action): State {
+export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case RECEIVE_URLS: {
       return {
@@ -149,7 +202,10 @@ export function reducer(state: State, action: Action): State {
     }
     case RECEIVE_SITES: {
       const newSites = keyBy(action.payload, "url");
-      const newUrls = Object.keys(newSites);
+      const newUrls = action.payload.map(({ url, rank2017 }) => ({
+        url,
+        rank2017,
+      }));
 
       return {
         ...state,
@@ -182,7 +238,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, search: action.payload };
     }
   }
-}
+};
 
 // actions
 
@@ -276,6 +332,12 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   }, [dispatch, state.selectedUrls, state.sites]);
 };
 
+const usePersistState = (state: State) => {
+  useEffect(() => {
+    saveUserState(state);
+  });
+};
+
 const debounceSearchNetworkRequest = debounce(
   (fun) => fun(),
   DEBOUNCE_SEARCH_TIME_MS
@@ -293,10 +355,10 @@ const searchForUrls = (
 
   if (search.length < MIN_SEARCH_STRING_LENGTH) return;
 
-  const found = state.urls.filter((url) => url.includes(search));
+  const found = state.urls.filter(({ url }) => url.includes(search));
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
-  const requestUrl = `${API_ROOT}?search=${search}`;
+  const requestUrl = `${API_ROOT}?search2=${search}`;
   debounceSearchNetworkRequest(() =>
     fetch(requestUrl)
       .then((res) => res.json())
@@ -309,4 +371,4 @@ const searchForUrls = (
   );
 };
 
-export const effects = { useSelectedSites, searchForUrls };
+export const effects = { useSelectedSites, usePersistState, searchForUrls };

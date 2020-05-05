@@ -6,13 +6,19 @@ import {
   AugmentedSite,
   PresetName,
   reducer,
-  initialState,
+  initializeState,
   selectors,
   actions,
   presets,
   effects,
 } from "./state";
 import "./App.css";
+
+declare global {
+  interface Window {
+    _store: any;
+  }
+}
 
 type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 type IdentityFunction = (x: number) => number;
@@ -52,16 +58,12 @@ function SiteDetails({ site }: { site: AugmentedSite }) {
       <p>
         full URL: <a href={site.url}>{site.url}</a>
       </p>
-      <p>cdn: {site.cdn || "none"}</p>
+      <p>cdn: {site.cdn || "none detected"}</p>
       <p>
         profile time:{" "}
-        {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString(
-          undefined,
-          {
-            timeZone: "UTC",
-          }
-        )}{" "}
-        UTC
+        {new Date(site.startedDateTime * 1000).toLocaleString(undefined, {
+          timeZoneName: "short",
+        })}
       </p>
     </div>
   );
@@ -76,7 +78,20 @@ function Chart({
   yTransform = (x) => x,
 }: {
   sites: AugmentedSite[];
-  field: string;
+  field:
+    | "TTFB"
+    | "firstContentfulPaint"
+    | "firstMeaningfulPaint"
+    | "firstCPUIdle"
+    | "timeToInteractive"
+    | "maxPotentialFirstInputDelay"
+    | "speedIndex"
+    | "performanceScore"
+    | "bytesJS"
+    | "bytesImg"
+    | "bytesTotal"
+    | "reqTotal";
+
   name: string;
   highlightedUrl: string;
   reverse?: boolean;
@@ -88,13 +103,13 @@ function Chart({
     .map((site) => ({
       url: site.url,
       x: site.name,
-      y: yTransform(parseFloat(site[field])) || 0,
+      y: yTransform(site[field]) || 0,
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
 
   return (
     <div className="Chart">
-      <VictoryChart padding={{ top: 0, right: 40, bottom: 50, left: 70 }}>
+      <VictoryChart padding={{ top: 20, right: 40, bottom: 50, left: 70 }}>
         <VictoryAxis
           label={name}
           tickLabelComponent={
@@ -118,7 +133,9 @@ function Chart({
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, undefined, initializeState);
+
+  window._store = state;
 
   const { highlightedUrl, urls } = state;
   const selectedSites = selectors.selectedSites(state);
@@ -126,28 +143,20 @@ function App() {
   // effects
 
   effects.useSelectedSites(state, dispatch);
+  effects.usePersistState(state);
 
   return (
     <div className="App">
       <h1>perf land</h1>
-      <div>
-        <ul>
-          <li>this is a demo</li>
-          <li>search for some websites to compare</li>
-          <li>or pick a preset group of sites</li>
-          <li>over 600,000 sites are available</li>
-          <li>
-            all data is from the HTTP Archive, which is public and free (in all
-            senses)
-          </li>
-          <li>
-            tests are run from a private instance of WebPageTest located in
-            Redwood City, California.{" "}
-            <a href="https://httparchive.org/faq#how-is-the-data-gathered">
-              more info here.
-            </a>
-          </li>
-        </ul>
+      <div className="text">
+        <p>
+          explore the world of web performance and compare thousands of
+          websites. made with :love: by{" "}
+          <a href="https://formidable.com">Formidable</a>.
+        </p>
+        <p>
+          learn more about perf land <a href="#about">here</a>.
+        </p>
       </div>
       <h1>websites</h1>
       {!urls.length && <p>loading...</p>}
@@ -155,7 +164,7 @@ function App() {
         <div>
           <Select
             className="UrlSelect"
-            options={state.urls.map((url) => ({ value: url, label: url }))}
+            options={state.urls.map(({ url }) => ({ value: url, label: url }))}
             onChange={(option) => {
               if (!option || "length" in option) return;
               dispatch(actions.addUrl(option.value));
@@ -187,7 +196,7 @@ function App() {
             clear
           </button>
           <div>
-            <b>presets:</b>
+            <h3>preset collections</h3>
             {Object.keys(presets).map((presetKey) => (
               <button
                 key={presetKey}
@@ -285,6 +294,32 @@ function App() {
         {selectedSites.map((site) => (
           <SiteDetails key={site.url} site={site} />
         ))}
+      </div>
+      <h1 id="about">about</h1>
+      <div className="text">
+        <p>
+          perf land is currently in the alpha stage. If there are features you'd
+          like to see or bugs you'd like to tell us about, check out the{" "}
+          <a href="https://github.com/FormidableLabs/perf-land">repository</a>.
+        </p>
+        <p>
+          There are over 600,000 sites are available here. The underlying data
+          is from the HTTP Archive, a public and free resource.
+        </p>
+        <p>
+          The performance tests are run from a private instance of WebPageTest
+          located in Redwood City, California. If you'd like to learn more about
+          the tests,{" "}
+          <a href="https://httparchive.org/faq#how-is-the-data-gathered">
+            head to the HTTP Archive
+          </a>
+          .
+        </p>
+      </div>
+      <div className="footer">
+        <p>
+          &copy; 2020 <a href="https://formidable.com">Formidable</a>
+        </p>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
 
+/* globals */
+
 body,
 button {
   font-family: "Roboto Mono";
@@ -8,31 +10,6 @@ button {
 tspan {
   font-family: "Roboto Mono", monospace !important;
   font-size: 15px !important;
-}
-
-.App {
-  margin: 1em;
-}
-
-.UrlSelect {
-  max-width: 400px;
-  margin: 1em 0;
-}
-
-.SelectedSite {
-  margin: 1em;
-}
-
-.SiteDetails {
-  margin-bottom: 2em;
-}
-
-.Chart {
-  max-width: 400px;
-}
-
-.columns {
-  column-width: 400px;
 }
 
 ::selection {
@@ -52,4 +29,42 @@ button {
 a,
 a:visited {
   color: inherit;
+}
+
+/* components */
+
+.App {
+  margin: 1em;
+}
+
+.UrlSelect {
+  max-width: 400px;
+  margin: 1em 0;
+}
+
+.SelectedSite {
+  margin: 1em 0;
+}
+
+.SiteDetails {
+  margin-bottom: 2em;
+}
+
+.Chart {
+  max-width: 400px;
+}
+
+/* classes */
+
+.columns {
+  column-width: 400px;
+}
+
+.text {
+  max-width: 500px;
+}
+
+.footer {
+  text-align: center;
+  margin: 4em 0;
 }
