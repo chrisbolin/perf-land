@@ -60,7 +60,7 @@ function searchUrls(connection, res, search) {
 
 function searchUrls2(connection, res, search) {
   return connection
-    .select("url", "rank2017 as rank")
+    .select("url", "rank2017")
     .from("page_runs")
     .where("url", "like", `%${search}%`)
     .orderBy("rank2017", "asc")
