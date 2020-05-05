@@ -1,11 +1,12 @@
 const knex = require("knex");
 
 const SEARCH_TYPE = "SEARCH_TYPE";
+const SEARCH_TYPE_2 = "SEARCH_TYPE_2";
 const GET_PAGES_TYPE = "GET_PAGES_TYPE";
 
 const INPUT_URL_COUNT_MAX = 100;
 const INPUT_SEARCH_STRING_MIN = 5;
-const OUTPUT_SEARCH_RESULTS_MAX = 10;
+const OUTPUT_SEARCH_RESULTS_MAX = 5;
 
 /*
   place connection in global scope to cache it
@@ -57,24 +58,45 @@ function searchUrls(connection, res, search) {
     });
 }
 
+function searchUrls2(connection, res, search) {
+  return connection
+    .select("url", "rank2017 as rank")
+    .from("page_runs")
+    .where("url", "like", `%${search}%`)
+    .orderBy("rank2017", "asc")
+    .limit(OUTPUT_SEARCH_RESULTS_MAX)
+    .then((rows) => {
+      cacheResponse(res, 3);
+      res.status(200).json(rows);
+    });
+}
+
 function runAction(connection, res, type, data) {
   switch (type) {
     case GET_PAGES_TYPE:
       return getPages(connection, res, data);
     case SEARCH_TYPE:
       return searchUrls(connection, res, data);
+    case SEARCH_TYPE_2:
+      return searchUrls2(connection, res, data);
     default:
       return new Promise((resolve, reject) => reject("No request type found"));
   }
 }
 
 function requestType(query) {
-  const { search, url } = query;
+  const { search, search2, url } = query;
 
   if (search) {
     if (search.length < INPUT_SEARCH_STRING_MIN)
       throw new Error("Search not long enough");
     return [SEARCH_TYPE, search];
+  }
+
+  if (search2) {
+    if (search2.length < INPUT_SEARCH_STRING_MIN)
+      throw new Error("Search not long enough");
+    return [SEARCH_TYPE_2, search2];
   }
 
   if (url) {
