@@ -48,6 +48,8 @@ export const presets = {
   ],
 };
 
+export type PresetName = keyof typeof presets;
+
 interface Site {
   url: string;
   cdn: string;
@@ -94,7 +96,7 @@ interface State {
   search: string;
 }
 
-const initialPreset = "fast food";
+const initialPreset: PresetName = "fast food";
 
 export const initialState: State = {
   selectedUrls: new Set(presets[initialPreset]),
@@ -127,13 +129,6 @@ interface StringAction {
     | typeof CHANGE_HIGHLIGHTED_URL;
   payload: string;
 }
-
-export type PresetName =
-  | "airlines"
-  | "news"
-  | "social media"
-  | "shopping"
-  | "fast food";
 
 interface SelectPresetAction {
   type: typeof SELECT_PRESET_URLS;

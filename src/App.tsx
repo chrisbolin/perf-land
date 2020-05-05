@@ -195,7 +195,7 @@ function App() {
             clear
           </button>
           <div>
-            <b>presets:</b>
+            <h3>preset collections</h3>
             {Object.keys(presets).map((presetKey) => (
               <button
                 key={presetKey}
