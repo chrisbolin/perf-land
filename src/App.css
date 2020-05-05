@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
 
+/* globals */
+
 body,
 button {
   font-family: "Roboto Mono";
@@ -9,6 +11,27 @@ tspan {
   font-family: "Roboto Mono", monospace !important;
   font-size: 15px !important;
 }
+
+::selection {
+  background: #f9f98a;
+}
+
+h1 {
+  display: inline-block;
+  padding-bottom: 0;
+  border-bottom: 5px solid lightblue;
+}
+
+button {
+  cursor: pointer !important;
+}
+
+a,
+a:visited {
+  color: inherit;
+}
+
+/* components */
 
 .App {
   margin: 1em;
@@ -31,25 +54,17 @@ tspan {
   max-width: 400px;
 }
 
+/* classes */
+
 .columns {
   column-width: 400px;
 }
 
-::selection {
-  background: #f9f98a;
+.text {
+  max-width: 500px;
 }
 
-h1 {
-  display: inline-block;
-  padding-bottom: 0;
-  border-bottom: 5px solid lightblue;
-}
-
-button {
-  cursor: pointer !important;
-}
-
-a,
-a:visited {
-  color: inherit;
+.footer {
+  text-align: center;
+  margin: 4em 0;
 }

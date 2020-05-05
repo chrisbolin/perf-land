@@ -52,16 +52,15 @@ function SiteDetails({ site }: { site: AugmentedSite }) {
       <p>
         full URL: <a href={site.url}>{site.url}</a>
       </p>
-      <p>cdn: {site.cdn || "none"}</p>
+      <p>cdn: {site.cdn || "none detected"}</p>
       <p>
         profile time:{" "}
         {new Date(parseInt(site.startedDateTime) * 1000).toLocaleString(
           undefined,
           {
-            timeZone: "UTC",
+            timeZoneName: "short",
           }
-        )}{" "}
-        UTC
+        )}
       </p>
     </div>
   );
@@ -130,24 +129,15 @@ function App() {
   return (
     <div className="App">
       <h1>perf land</h1>
-      <div>
-        <ul>
-          <li>this is a demo</li>
-          <li>search for some websites to compare</li>
-          <li>or pick a preset group of sites</li>
-          <li>over 600,000 sites are available</li>
-          <li>
-            all data is from the HTTP Archive, which is public and free (in all
-            senses)
-          </li>
-          <li>
-            tests are run from a private instance of WebPageTest located in
-            Redwood City, California.{" "}
-            <a href="https://httparchive.org/faq#how-is-the-data-gathered">
-              more info here.
-            </a>
-          </li>
-        </ul>
+      <div className="text">
+        <p>
+          explore the world of web performance and compare thousands of
+          websites. made with :love: by{" "}
+          <a href="https://formidable.com">Formidable</a>.
+        </p>
+        <p>
+          learn more about perf land <a href="#about">here</a>.
+        </p>
       </div>
       <h1>websites</h1>
       {!urls.length && <p>loading...</p>}
@@ -285,6 +275,32 @@ function App() {
         {selectedSites.map((site) => (
           <SiteDetails key={site.url} site={site} />
         ))}
+      </div>
+      <h1 id="about">about</h1>
+      <div className="text">
+        <p>
+          perf land is currently in the alpha stage. If there are features you'd
+          like to see or bugs you'd like to tell us about, check out the{" "}
+          <a href="https://github.com/chrisbolin/perf-land/">repository</a>.
+        </p>
+        <p>
+          There are over 600,000 sites are available here. The underlying data
+          is from the HTTP Archive, a public and free resource.
+        </p>
+        <p>
+          The performance tests are run from a private instance of WebPageTest
+          located in Redwood City, California. If you'd like to learn more about
+          the tests,{" "}
+          <a href="https://httparchive.org/faq#how-is-the-data-gathered">
+            head to the HTTP Archive
+          </a>
+          .
+        </p>
+      </div>
+      <div className="footer">
+        <p>
+          &copy; 2020 <a href="https://formidable.com">Formidable</a>
+        </p>
       </div>
     </div>
   );
