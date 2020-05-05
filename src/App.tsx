@@ -88,7 +88,7 @@ function Chart({
 
   return (
     <div className="Chart">
-      <VictoryChart>
+      <VictoryChart padding={{ top: 0, right: 40, bottom: 50, left: 70 }}>
         <VictoryAxis
           label={name}
           tickLabelComponent={
@@ -101,7 +101,8 @@ function Chart({
           barWidth={22}
           style={{
             data: {
-              fill: ({ datum }) => (datum.url === highlightedUrl ? "blue" : ""),
+              fill: ({ datum }) =>
+                datum.url === highlightedUrl ? "#7171ff" : "",
             },
           }}
         />

@@ -1,5 +1,16 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
+
+body,
+button {
+  font-family: "Roboto Mono";
+}
+
+tspan {
+  font-family: "Roboto Mono", monospace !important;
+  font-size: 15px !important;
+}
+
 .App {
-  font-family: monospace;
   margin: 1em;
 }
 
@@ -21,12 +32,13 @@
 }
 
 ::selection {
-  background: yellow;
+  background: #f9f98a;
 }
 
 h1 {
   display: inline-block;
-  background-color: yellow;
+  padding-bottom: 0;
+  border-bottom: 5px solid lightblue;
 }
 
 button {
