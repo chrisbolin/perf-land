@@ -4,4 +4,6 @@
 
 Current status: demo
 
-**Issues welcome** for feature requests and bugfixes! PRs are not advised, as the code is yet not stable.
+**Issues welcome** for feature requests and bugfixes!
+
+**PRs are not advised**, as the code is yet not stable.
