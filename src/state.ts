@@ -1,4 +1,4 @@
-import { debounce, keyBy, orderBy, union } from "lodash";
+import { debounce, keyBy, orderBy, unionBy } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -160,7 +160,11 @@ type Action =
 // reducer
 
 const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
-  orderBy(union(listA, listB), "rank2017");
+  orderBy(unionBy(listA, listB, "url"), ({ url, rank2017 }) => {
+    const httpPenalty = url.startsWith("http://") ? 1 : 0;
+    const lengthPenalty = url.length / 255;
+    return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
+  });
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {

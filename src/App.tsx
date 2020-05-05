@@ -14,6 +14,12 @@ import {
 } from "./state";
 import "./App.css";
 
+declare global {
+  interface Window {
+    _store: any;
+  }
+}
+
 type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 type IdentityFunction = (x: number) => number;
 
@@ -128,6 +134,8 @@ function Chart({
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  window._store = state;
 
   const { highlightedUrl, urls } = state;
   const selectedSites = selectors.selectedSites(state);
