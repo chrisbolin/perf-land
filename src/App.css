@@ -23,11 +23,15 @@ tspan {
   margin: 1em;
 }
 
+.SiteDetails {
+  margin-bottom: 2em;
+}
+
 .Chart {
   max-width: 400px;
 }
 
-.charts {
+.columns {
   column-width: 400px;
 }
 
@@ -43,4 +47,9 @@ h1 {
 
 button {
   cursor: pointer !important;
+}
+
+a,
+a:visited {
+  color: inherit;
 }
