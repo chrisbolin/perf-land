@@ -281,7 +281,7 @@ function App() {
         <p>
           perf land is currently in the alpha stage. If there are features you'd
           like to see or bugs you'd like to tell us about, check out the{" "}
-          <a href="https://github.com/chrisbolin/perf-land/">repository</a>.
+          <a href="https://github.com/FormidableLabs/perf-land">repository</a>.
         </p>
         <p>
           There are over 600,000 sites are available here. The underlying data
