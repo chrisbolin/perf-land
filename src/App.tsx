@@ -94,7 +94,7 @@ function Chart({
 
   return (
     <div className="Chart">
-      <VictoryChart padding={{ top: 0, right: 40, bottom: 50, left: 70 }}>
+      <VictoryChart padding={{ top: 20, right: 40, bottom: 50, left: 70 }}>
         <VictoryAxis
           label={name}
           tickLabelComponent={
