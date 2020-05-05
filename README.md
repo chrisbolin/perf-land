@@ -2,7 +2,7 @@
 
 [perf.land](https://perf.land)
 
-Current status: demo
+Current status: alpha
 
 **Issues welcome** for feature requests and bugfixes!
 
