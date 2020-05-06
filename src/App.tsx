@@ -6,7 +6,7 @@ import {
   AugmentedSite,
   PresetName,
   reducer,
-  initialState,
+  initializeState,
   selectors,
   actions,
   presets,
@@ -133,7 +133,7 @@ function Chart({
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, undefined, initializeState);
 
   window._store = state;
 
@@ -143,6 +143,7 @@ function App() {
   // effects
 
   effects.useSelectedSites(state, dispatch);
+  effects.usePersistState(state);
 
   return (
     <div className="App">

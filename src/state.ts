@@ -1,4 +1,4 @@
-import { debounce, keyBy, orderBy, unionBy } from "lodash";
+import { debounce, keyBy, orderBy, pick, unionBy } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -104,12 +104,37 @@ interface State {
 
 const initialPreset: PresetName = "fast food";
 
-export const initialState: State = {
+const initialState: State = {
   selectedUrls: new Set(presets[initialPreset]),
   highlightedUrl: presets[initialPreset][0],
   sites: {},
   urls: [],
   search: "",
+};
+
+const STATE_LOCAL_STORAGE_KEY = "userState";
+
+const saveUserState = (state: State) => {
+  try {
+    localStorage.setItem(
+      STATE_LOCAL_STORAGE_KEY,
+      JSON.stringify(pick(state, "highlightedUrl"))
+    );
+  } catch (e) {
+    console.error("Failed to save user state", state, e);
+  }
+};
+const loadUserState = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STATE_LOCAL_STORAGE_KEY) || "{}");
+  } catch (e) {
+    console.error("Failed to loadUserState", e);
+    return {};
+  }
+};
+
+export const initializeState = (): State => {
+  return { ...initialState, ...loadUserState() };
 };
 
 // action types
@@ -167,7 +192,7 @@ const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
     return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
   });
 
-export function reducer(state: State, action: Action): State {
+export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case RECEIVE_URLS: {
       return {
@@ -213,7 +238,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, search: action.payload };
     }
   }
-}
+};
 
 // actions
 
@@ -307,6 +332,12 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   }, [dispatch, state.selectedUrls, state.sites]);
 };
 
+const usePersistState = (state: State) => {
+  useEffect(() => {
+    saveUserState(state);
+  });
+};
+
 const debounceSearchNetworkRequest = debounce(
   (fun) => fun(),
   DEBOUNCE_SEARCH_TIME_MS
@@ -340,4 +371,4 @@ const searchForUrls = (
   );
 };
 
-export const effects = { useSelectedSites, searchForUrls };
+export const effects = { useSelectedSites, usePersistState, searchForUrls };
