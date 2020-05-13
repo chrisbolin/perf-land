@@ -125,7 +125,7 @@ const saveUserState = (state: State) => {
   try {
     localStorage.setItem(
       STATE_LOCAL_STORAGE_KEY,
-      JSON.stringify(pick(state, "highlightedUrl"))
+      JSON.stringify(pick(state, "highlightedUrl", "currentCollection"))
     );
   } catch (e) {
     console.error("Failed to save user state", state, e);
