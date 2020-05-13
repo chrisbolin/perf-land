@@ -198,19 +198,21 @@ function App() {
           <button onClick={() => dispatch(actions.saveCollection())}>
             save
           </button>
-          <div>
-            <h3>saved collections</h3>
-            {Object.keys(savedCollections).map((collectionName) => (
-              <button
-                key={collectionName}
-                onClick={() =>
-                  dispatch(actions.selectCollection(collectionName))
-                }
-              >
-                {collectionName}
-              </button>
-            ))}
-          </div>
+          {!!Object.keys(savedCollections).length && (
+            <div>
+              <h3>saved collections</h3>
+              {Object.keys(savedCollections).map((collectionName) => (
+                <button
+                  key={collectionName}
+                  onClick={() =>
+                    dispatch(actions.selectCollection(collectionName))
+                  }
+                >
+                  {collectionName}
+                </button>
+              ))}
+            </div>
+          )}
           <div>
             <h3>preset collections</h3>
             {Object.keys(presets).map((presetKey) => (
