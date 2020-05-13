@@ -103,12 +103,17 @@ interface Collection {
   name: string;
 }
 
+interface SavedCollections {
+  [name: string]: Collection;
+}
+
 interface State {
   highlightedUrl: string;
   sites: SitesMap;
   urls: UrlDetails[];
   currentCollection: Collection;
   search: string;
+  savedCollections: SavedCollections;
 }
 
 const initialState: State = {
@@ -117,6 +122,7 @@ const initialState: State = {
   urls: [],
   search: "",
   currentCollection: { name: "", sites: [] },
+  savedCollections: {},
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -125,7 +131,9 @@ const saveUserState = (state: State) => {
   try {
     localStorage.setItem(
       STATE_LOCAL_STORAGE_KEY,
-      JSON.stringify(pick(state, "highlightedUrl", "currentCollection"))
+      JSON.stringify(
+        pick(state, "highlightedUrl", "currentCollection", "savedCollections")
+      )
     );
   } catch (e) {
     console.error("Failed to save user state", state, e);
@@ -154,17 +162,19 @@ const RECEIVE_URLS = "RECEIVE_URLS";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
 const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
 const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
-const SELECT_PRESET_URLS = "SELECT_PRESET_URLS";
+const SELECT_PRESET = "SELECT_PRESET";
 const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
 const CHANGE_SEARCH = "CHANGE_SEARCH";
+const SAVE_COLLECTION = "SAVE_COLLECTION";
+const SELECT_COLLECTION = "SELECT_COLLECTION";
 
 const initialAction: Action = {
-  type: SELECT_PRESET_URLS,
+  type: SELECT_PRESET,
   payload: "fast food",
 };
 
 interface BareAction {
-  type: typeof CLEAR_ALL_SELECTED_URLS;
+  type: typeof CLEAR_ALL_SELECTED_URLS | typeof SAVE_COLLECTION;
 }
 
 interface StringAction {
@@ -172,12 +182,13 @@ interface StringAction {
     | typeof ADD_SELECTED_URL
     | typeof REMOVE_SELECTED_URL
     | typeof CHANGE_SEARCH
+    | typeof SELECT_COLLECTION
     | typeof CHANGE_HIGHLIGHTED_URL;
   payload: string;
 }
 
 interface SelectPresetAction {
-  type: typeof SELECT_PRESET_URLS;
+  type: typeof SELECT_PRESET;
   payload: PresetName;
 }
 
@@ -243,7 +254,7 @@ export const reducer = (state: State, action: Action): State => {
     case CLEAR_ALL_SELECTED_URLS: {
       return { ...state, currentCollection: initialState.currentCollection };
     }
-    case SELECT_PRESET_URLS: {
+    case SELECT_PRESET: {
       const urls = presets[action.payload];
       const collection: Collection = {
         name: action.payload,
@@ -260,6 +271,21 @@ export const reducer = (state: State, action: Action): State => {
     }
     case CHANGE_SEARCH: {
       return { ...state, search: action.payload };
+    }
+    case SAVE_COLLECTION: {
+      const savedCollections = {
+        ...state.savedCollections,
+        [state.currentCollection.name || Math.random().toString()]: cloneDeep(
+          state.currentCollection
+        ),
+      };
+      return { ...state, savedCollections };
+    }
+    case SELECT_COLLECTION: {
+      const presetName = action.payload;
+      const currentCollection =
+        state.savedCollections[presetName] || state.currentCollection;
+      return { ...state, currentCollection };
     }
   }
 };
@@ -291,13 +317,22 @@ const clearAllSelectedUrls = () => ({
 });
 
 const selectPresetUrls = (presetName: PresetName) => ({
-  type: SELECT_PRESET_URLS as typeof SELECT_PRESET_URLS,
+  type: SELECT_PRESET as typeof SELECT_PRESET,
   payload: presetName,
 });
 
-export const receiveSites = (sites: Site[]) => ({
+const receiveSites = (sites: Site[]) => ({
   type: RECEIVE_SITES as typeof RECEIVE_SITES,
   payload: sites,
+});
+
+const selectCollection = (collectionName: string) => ({
+  type: SELECT_COLLECTION as typeof SELECT_COLLECTION,
+  payload: collectionName,
+});
+
+const saveCollection = () => ({
+  type: SAVE_COLLECTION as typeof SAVE_COLLECTION,
 });
 
 export const actions = {
@@ -308,6 +343,8 @@ export const actions = {
   clearAllSelectedUrls,
   selectPresetUrls,
   receiveSites,
+  selectCollection,
+  saveCollection,
 };
 
 // selectors
