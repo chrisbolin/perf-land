@@ -137,7 +137,7 @@ function App() {
 
   window._store = state;
 
-  const { highlightedUrl, urls } = state;
+  const { highlightedUrl, urls, savedCollections } = state;
   const selectedSites = selectors.selectedSites(state);
 
   // effects
@@ -193,8 +193,24 @@ function App() {
             />
           ))}
           <button onClick={() => dispatch(actions.clearAllSelectedUrls())}>
-            clear
+            clear all
           </button>
+          <button onClick={() => dispatch(actions.saveCollection())}>
+            save
+          </button>
+          <div>
+            <h3>saved collections</h3>
+            {Object.keys(savedCollections).map((collectionName) => (
+              <button
+                key={collectionName}
+                onClick={() =>
+                  dispatch(actions.selectCollection(collectionName))
+                }
+              >
+                {collectionName}
+              </button>
+            ))}
+          </div>
           <div>
             <h3>preset collections</h3>
             {Object.keys(presets).map((presetKey) => (

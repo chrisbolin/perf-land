@@ -1,4 +1,4 @@
-import { debounce, keyBy, orderBy, pick, unionBy } from "lodash";
+import { cloneDeep, debounce, keyBy, orderBy, pick, unionBy } from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -94,22 +94,35 @@ interface SitesMap {
   [key: string]: Site;
 }
 
+interface CollectionSite {
+  url: string;
+}
+
+interface Collection {
+  sites: CollectionSite[];
+  name: string;
+}
+
+interface SavedCollections {
+  [name: string]: Collection;
+}
+
 interface State {
   highlightedUrl: string;
   sites: SitesMap;
   urls: UrlDetails[];
-  selectedUrls: Set<string>;
+  currentCollection: Collection;
   search: string;
+  savedCollections: SavedCollections;
 }
 
-const initialPreset: PresetName = "fast food";
-
 const initialState: State = {
-  selectedUrls: new Set(presets[initialPreset]),
-  highlightedUrl: presets[initialPreset][0],
+  highlightedUrl: "",
   sites: {},
   urls: [],
   search: "",
+  currentCollection: { name: "", sites: [] },
+  savedCollections: {},
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -118,7 +131,9 @@ const saveUserState = (state: State) => {
   try {
     localStorage.setItem(
       STATE_LOCAL_STORAGE_KEY,
-      JSON.stringify(pick(state, "highlightedUrl"))
+      JSON.stringify(
+        pick(state, "highlightedUrl", "currentCollection", "savedCollections")
+      )
     );
   } catch (e) {
     console.error("Failed to save user state", state, e);
@@ -134,7 +149,10 @@ const loadUserState = () => {
 };
 
 export const initializeState = (): State => {
-  return { ...initialState, ...loadUserState() };
+  return {
+    ...reducer(initialState, initialAction),
+    ...loadUserState(),
+  };
 };
 
 // action types
@@ -144,12 +162,19 @@ const RECEIVE_URLS = "RECEIVE_URLS";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
 const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
 const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
-const SELECT_PRESET_URLS = "SELECT_PRESET_URLS";
+const SELECT_PRESET = "SELECT_PRESET";
 const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
 const CHANGE_SEARCH = "CHANGE_SEARCH";
+const SAVE_COLLECTION = "SAVE_COLLECTION";
+const SELECT_COLLECTION = "SELECT_COLLECTION";
+
+const initialAction: Action = {
+  type: SELECT_PRESET,
+  payload: "fast food",
+};
 
 interface BareAction {
-  type: typeof CLEAR_ALL_SELECTED_URLS;
+  type: typeof CLEAR_ALL_SELECTED_URLS | typeof SAVE_COLLECTION;
 }
 
 interface StringAction {
@@ -157,12 +182,13 @@ interface StringAction {
     | typeof ADD_SELECTED_URL
     | typeof REMOVE_SELECTED_URL
     | typeof CHANGE_SEARCH
+    | typeof SELECT_COLLECTION
     | typeof CHANGE_HIGHLIGHTED_URL;
   payload: string;
 }
 
 interface SelectPresetAction {
-  type: typeof SELECT_PRESET_URLS;
+  type: typeof SELECT_PRESET;
   payload: PresetName;
 }
 
@@ -214,28 +240,52 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case ADD_SELECTED_URL: {
-      const selectedUrls = new Set(state.selectedUrls);
-      selectedUrls.add(action.payload);
-      return { ...state, selectedUrls, search: "" };
+      const currentCollection = cloneDeep(state.currentCollection);
+      currentCollection.sites.push({ url: action.payload });
+      return { ...state, search: "", currentCollection };
     }
     case REMOVE_SELECTED_URL: {
-      const selectedUrls = new Set(state.selectedUrls);
-      selectedUrls.delete(action.payload);
-      return { ...state, selectedUrls };
+      const currentCollection = cloneDeep(state.currentCollection);
+      currentCollection.sites = currentCollection.sites.filter(
+        ({ url }) => url !== action.payload
+      );
+      return { ...state, currentCollection };
     }
     case CLEAR_ALL_SELECTED_URLS: {
-      return { ...state, selectedUrls: new Set() };
+      return { ...state, currentCollection: initialState.currentCollection };
     }
-    case SELECT_PRESET_URLS: {
+    case SELECT_PRESET: {
       const urls = presets[action.payload];
-      const selectedUrls = new Set(urls);
-      return { ...state, selectedUrls, highlightedUrl: urls[0] };
+      const collection: Collection = {
+        name: action.payload,
+        sites: urls.map((url) => ({ url })),
+      };
+      return {
+        ...state,
+        highlightedUrl: urls[0],
+        currentCollection: collection,
+      };
     }
     case CHANGE_HIGHLIGHTED_URL: {
       return { ...state, highlightedUrl: action.payload };
     }
     case CHANGE_SEARCH: {
       return { ...state, search: action.payload };
+    }
+    case SAVE_COLLECTION: {
+      const savedCollections = {
+        ...state.savedCollections,
+        [state.currentCollection.name || Math.random().toString()]: cloneDeep(
+          state.currentCollection
+        ),
+      };
+      return { ...state, savedCollections };
+    }
+    case SELECT_COLLECTION: {
+      const presetName = action.payload;
+      const currentCollection =
+        state.savedCollections[presetName] || state.currentCollection;
+      return { ...state, currentCollection };
     }
   }
 };
@@ -267,13 +317,22 @@ const clearAllSelectedUrls = () => ({
 });
 
 const selectPresetUrls = (presetName: PresetName) => ({
-  type: SELECT_PRESET_URLS as typeof SELECT_PRESET_URLS,
+  type: SELECT_PRESET as typeof SELECT_PRESET,
   payload: presetName,
 });
 
-export const receiveSites = (sites: Site[]) => ({
+const receiveSites = (sites: Site[]) => ({
   type: RECEIVE_SITES as typeof RECEIVE_SITES,
   payload: sites,
+});
+
+const selectCollection = (collectionName: string) => ({
+  type: SELECT_COLLECTION as typeof SELECT_COLLECTION,
+  payload: collectionName,
+});
+
+const saveCollection = () => ({
+  type: SAVE_COLLECTION as typeof SAVE_COLLECTION,
 });
 
 export const actions = {
@@ -284,6 +343,8 @@ export const actions = {
   clearAllSelectedUrls,
   selectPresetUrls,
   receiveSites,
+  selectCollection,
+  saveCollection,
 };
 
 // selectors
@@ -304,8 +365,8 @@ const augmentSite = (site: Site): AugmentedSite => {
 };
 
 const selectedSites = (state: State): AugmentedSite[] =>
-  Array.from(state.selectedUrls.keys())
-    .flatMap((url) => {
+  state.currentCollection.sites
+    .flatMap(({ url }) => {
       const site = state.sites[url];
       return site ? [site] : [];
     })
@@ -317,9 +378,9 @@ export const selectors = { selectedSites };
 
 const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   useEffect(() => {
-    const urlsWithoutData = Array.from(state.selectedUrls).filter(
-      (url) => !state.sites[url]
-    );
+    const urlsWithoutData = state.currentCollection.sites
+      .map(({ url }) => url)
+      .filter((url) => !state.sites[url]);
 
     if (!urlsWithoutData.length) return;
 
@@ -329,7 +390,7 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
       .then((data) => {
         dispatch(actions.receiveSites(data));
       });
-  }, [dispatch, state.selectedUrls, state.sites]);
+  }, [dispatch, state.currentCollection.sites, state.sites]);
 };
 
 const usePersistState = (state: State) => {
