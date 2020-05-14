@@ -174,7 +174,7 @@ const initialAction: Action = {
 };
 
 interface BareAction {
-  type: typeof CLEAR_ALL_SELECTED_URLS | typeof SAVE_COLLECTION;
+  type: typeof CLEAR_ALL_SELECTED_URLS;
 }
 
 interface StringAction {
@@ -183,6 +183,7 @@ interface StringAction {
     | typeof REMOVE_SELECTED_URL
     | typeof CHANGE_SEARCH
     | typeof SELECT_COLLECTION
+    | typeof SAVE_COLLECTION
     | typeof CHANGE_HIGHLIGHTED_URL;
   payload: string;
 }
@@ -275,9 +276,7 @@ export const reducer = (state: State, action: Action): State => {
     case SAVE_COLLECTION: {
       const savedCollections = {
         ...state.savedCollections,
-        [state.currentCollection.name || Math.random().toString()]: cloneDeep(
-          state.currentCollection
-        ),
+        [action.payload]: cloneDeep(state.currentCollection),
       };
       return { ...state, savedCollections };
     }
@@ -331,8 +330,9 @@ const selectCollection = (collectionName: string) => ({
   payload: collectionName,
 });
 
-const saveCollection = () => ({
+const saveCollection = (collectionName: string) => ({
   type: SAVE_COLLECTION as typeof SAVE_COLLECTION,
+  payload: collectionName,
 });
 
 export const actions = {
