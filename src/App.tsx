@@ -171,25 +171,8 @@ function App() {
         </p>
       </div>
       <h1>websites</h1>
-      {!urls.length && <p>loading...</p>}
       {!!urls.length && (
         <div>
-          <Select
-            className="UrlSelect"
-            options={state.urls.map(({ url }) => ({ value: url, label: url }))}
-            onChange={(option) => {
-              if (!option || "length" in option) return;
-              dispatch(actions.addUrl(option.value));
-            }}
-            onInputChange={(input: string) => {
-              effects.searchForUrls(state, dispatch, input);
-            }}
-            inputValue={state.search}
-            value={null}
-            placeholder="Add website..."
-            // isLoading
-            // loadingMessage={() => "loading"}
-          />
           {currentSites.map((site) => (
             <SelectedSite
               key={site.url}
@@ -204,42 +187,63 @@ function App() {
               }
             />
           ))}
+          <Select
+            className="UrlSelect"
+            options={state.urls.map(({ url }) => ({ value: url, label: url }))}
+            onChange={(option) => {
+              if (!option || "length" in option) return;
+              dispatch(actions.addUrl(option.value));
+            }}
+            onInputChange={(input: string) => {
+              effects.searchForUrls(state, dispatch, input);
+            }}
+            inputValue={state.search}
+            value={null}
+            placeholder="Add website..."
+          />
           <button onClick={() => dispatch(actions.clearAllSelectedUrls())}>
-            clear all
+            new
           </button>
           <button onClick={() => promptAndSaveCollection()}>
             {viewingSavedCollection ? "update" : "save"}
           </button>
-          {!!Object.keys(savedCollections).length && (
-            <div>
-              <h3>saved collections</h3>
-              {Object.keys(savedCollections).map((collectionName) => (
-                <button
-                  key={collectionName}
-                  onClick={() =>
-                    dispatch(actions.selectCollection(collectionName))
-                  }
-                >
-                  {collectionName}
-                </button>
-              ))}
-            </div>
+          {viewingSavedCollection && (
+            <button
+              onClick={() =>
+                dispatch(actions.deleteCollection(state.currentCollection.name))
+              }
+            >
+              delete
+            </button>
           )}
-          <div>
-            <h3>preset collections</h3>
-            {Object.keys(presets).map((presetKey) => (
-              <button
-                key={presetKey}
-                onClick={() =>
-                  dispatch(actions.selectPresetUrls(presetKey as PresetName))
-                }
-              >
-                {presetKey}
-              </button>
-            ))}
-          </div>
         </div>
       )}
+      {!!Object.keys(savedCollections).length && (
+        <div>
+          <h3>saved collections</h3>
+          {Object.keys(savedCollections).map((collectionName) => (
+            <button
+              key={collectionName}
+              onClick={() => dispatch(actions.selectCollection(collectionName))}
+            >
+              {collectionName}
+            </button>
+          ))}
+        </div>
+      )}
+      <div>
+        <h3>preset collections</h3>
+        {Object.keys(presets).map((presetKey) => (
+          <button
+            key={presetKey}
+            onClick={() =>
+              dispatch(actions.selectPresetUrls(presetKey as PresetName))
+            }
+          >
+            {presetKey}
+          </button>
+        ))}
+      </div>
       {!!currentSites.length && <h1>comparisons</h1>}
       <div className="columns">
         <Chart
