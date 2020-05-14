@@ -145,6 +145,14 @@ function App() {
   effects.useSelectedSites(state, dispatch);
   effects.usePersistState(state);
 
+  // event handlers
+  const promptAndSaveCollection = () => {
+    const name = prompt("Save as");
+    if (name) {
+      dispatch(actions.saveCollection(name));
+    }
+  };
+
   return (
     <div className="App">
       <h1>perf land</h1>
@@ -195,9 +203,7 @@ function App() {
           <button onClick={() => dispatch(actions.clearAllSelectedUrls())}>
             clear all
           </button>
-          <button onClick={() => dispatch(actions.saveCollection())}>
-            save
-          </button>
+          <button onClick={() => promptAndSaveCollection()}>save</button>
           {!!Object.keys(savedCollections).length && (
             <div>
               <h3>saved collections</h3>
