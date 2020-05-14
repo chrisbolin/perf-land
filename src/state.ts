@@ -62,6 +62,21 @@ export const presets = {
   ],
 };
 
+const colors = [
+  "#332288",
+  "#117733",
+  "#6699cc",
+  "#ddcc77",
+  "#999933",
+  "#cc6677",
+  "#aa4466",
+  "#882255",
+  "#aa4499",
+  "#44aa99",
+  "#661100",
+  "#88ccee",
+];
+
 export type PresetName = keyof typeof presets;
 
 interface Site {
@@ -91,6 +106,7 @@ interface Site {
 
 export interface AugmentedSite extends Site {
   name: string;
+  color: string;
 }
 
 interface UrlDetails {
@@ -375,7 +391,7 @@ export const actions = {
 
 // selectors
 
-const augmentSite = (site: Site): AugmentedSite => {
+const augmentSite = (site: Site, index: number): AugmentedSite => {
   let name = site.url
     .replace(/http.*:\/\//, "") // remove protocol
     .replace(/\/$/, ""); // remove trailing slash
@@ -387,6 +403,7 @@ const augmentSite = (site: Site): AugmentedSite => {
   return {
     ...site,
     name,
+    color: colors[index],
   };
 };
 

@@ -101,7 +101,7 @@ function Chart({
 
   const data = sites
     .map((site) => ({
-      url: site.url,
+      ...site,
       x: site.name,
       y: yTransform(site[field]) || 0,
     }))
@@ -123,7 +123,7 @@ function Chart({
           style={{
             data: {
               fill: ({ datum }) =>
-                datum.url === highlightedUrl ? "#7171ff" : "",
+                datum.url === highlightedUrl ? "black" : datum.color,
             },
           }}
         />
