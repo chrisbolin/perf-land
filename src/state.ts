@@ -274,11 +274,17 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, search: action.payload };
     }
     case SAVE_COLLECTION: {
+      const collectionName = action.payload;
+      const currentCollection = {
+        ...cloneDeep(state.currentCollection),
+        name: collectionName,
+      };
       const savedCollections = {
         ...state.savedCollections,
-        [action.payload]: cloneDeep(state.currentCollection),
+        [collectionName]: currentCollection,
       };
-      return { ...state, savedCollections };
+      // save to savedCollections _and_ update currentCollection
+      return { ...state, savedCollections, currentCollection };
     }
     case SELECT_COLLECTION: {
       const presetName = action.payload;
@@ -372,7 +378,10 @@ const currentSites = (state: State): AugmentedSite[] =>
     })
     .map(augmentSite);
 
-export const selectors = { currentSites };
+const viewingSavedCollection = (state: State): boolean =>
+  !!state.savedCollections[state.currentCollection.name];
+
+export const selectors = { currentSites, viewingSavedCollection };
 
 // effects
 

@@ -16,7 +16,7 @@ import "./App.css";
 
 declare global {
   interface Window {
-    _store: any;
+    state: any;
   }
 }
 
@@ -135,10 +135,11 @@ function Chart({
 function App() {
   const [state, dispatch] = useReducer(reducer, undefined, initializeState);
 
-  window._store = state;
+  window.state = state;
 
   const { highlightedUrl, urls, savedCollections } = state;
   const currentSites = selectors.currentSites(state);
+  const viewingSavedCollection = selectors.viewingSavedCollection(state);
 
   // effects
 
@@ -147,7 +148,10 @@ function App() {
 
   // event handlers
   const promptAndSaveCollection = () => {
-    const name = prompt("Save as");
+    const name = viewingSavedCollection
+      ? state.currentCollection.name
+      : prompt("Save as");
+
     if (name) {
       dispatch(actions.saveCollection(name));
     }
@@ -203,7 +207,9 @@ function App() {
           <button onClick={() => dispatch(actions.clearAllSelectedUrls())}>
             clear all
           </button>
-          <button onClick={() => promptAndSaveCollection()}>save</button>
+          <button onClick={() => promptAndSaveCollection()}>
+            {viewingSavedCollection ? "update" : "save"}
+          </button>
           {!!Object.keys(savedCollections).length && (
             <div>
               <h3>saved collections</h3>
