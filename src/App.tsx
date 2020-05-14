@@ -138,7 +138,7 @@ function App() {
   window._store = state;
 
   const { highlightedUrl, urls, savedCollections } = state;
-  const selectedSites = selectors.selectedSites(state);
+  const currentSites = selectors.currentSites(state);
 
   // effects
 
@@ -186,7 +186,7 @@ function App() {
             // isLoading
             // loadingMessage={() => "loading"}
           />
-          {selectedSites.map((site) => (
+          {currentSites.map((site) => (
             <SelectedSite
               key={site.url}
               site={site}
@@ -234,88 +234,88 @@ function App() {
           </div>
         </div>
       )}
-      {!!selectedSites.length && <h1>comparisons</h1>}
+      {!!currentSites.length && <h1>comparisons</h1>}
       <div className="columns">
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Time to first byte (ms)"
           field="TTFB"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="First contentful paint (ms)"
           field="firstContentfulPaint"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="First meaningful paint (ms)"
           field="firstMeaningfulPaint"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="First cpu idle (ms)"
           field="firstCPUIdle"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Time to interactive (ms)"
           field="timeToInteractive"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Max potential first input delay (ms)"
           field="maxPotentialFirstInputDelay"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Speed index"
           field="speedIndex"
           highlightedUrl={highlightedUrl}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Lighthouse performance score"
           field="performanceScore"
           highlightedUrl={highlightedUrl}
           reverse
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="JavaScript payload (kB)"
           field="bytesJS"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Image payload (kB)"
           field="bytesImg"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Total request payload (kB)"
           field="bytesTotal"
           highlightedUrl={highlightedUrl}
           yTransform={(y) => Math.round(y / 1000)}
         />
         <Chart
-          sites={selectedSites}
+          sites={currentSites}
           name="Number of requests"
           field="reqTotal"
           highlightedUrl={highlightedUrl}
         />
       </div>
-      {!!selectedSites.length && <h1>site details</h1>}
+      {!!currentSites.length && <h1>site details</h1>}
       <div>
-        {selectedSites.map((site) => (
+        {currentSites.map((site) => (
           <SiteDetails key={site.url} site={site} />
         ))}
       </div>

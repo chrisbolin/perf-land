@@ -364,7 +364,7 @@ const augmentSite = (site: Site): AugmentedSite => {
   };
 };
 
-const selectedSites = (state: State): AugmentedSite[] =>
+const currentSites = (state: State): AugmentedSite[] =>
   state.currentCollection.sites
     .flatMap(({ url }) => {
       const site = state.sites[url];
@@ -372,7 +372,7 @@ const selectedSites = (state: State): AugmentedSite[] =>
     })
     .map(augmentSite);
 
-export const selectors = { selectedSites };
+export const selectors = { currentSites };
 
 // effects
 
