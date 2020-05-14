@@ -1,4 +1,12 @@
-import { cloneDeep, debounce, keyBy, orderBy, pick, unionBy } from "lodash";
+import {
+  cloneDeep,
+  debounce,
+  keyBy,
+  orderBy,
+  pick,
+  omit,
+  unionBy,
+} from "lodash";
 import { useEffect } from "react";
 
 const API_ROOT =
@@ -167,6 +175,7 @@ const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
 const CHANGE_SEARCH = "CHANGE_SEARCH";
 const SAVE_COLLECTION = "SAVE_COLLECTION";
 const SELECT_COLLECTION = "SELECT_COLLECTION";
+const DELETE_COLLECTION = "DELETE_COLLECTION";
 
 const initialAction: Action = {
   type: SELECT_PRESET,
@@ -184,6 +193,7 @@ interface StringAction {
     | typeof CHANGE_SEARCH
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
+    | typeof DELETE_COLLECTION
     | typeof CHANGE_HIGHLIGHTED_URL;
   payload: string;
 }
@@ -286,6 +296,10 @@ export const reducer = (state: State, action: Action): State => {
       // save to savedCollections _and_ update currentCollection
       return { ...state, savedCollections, currentCollection };
     }
+    case DELETE_COLLECTION: {
+      const savedCollections = omit(state.savedCollections, action.payload);
+      return { ...state, savedCollections };
+    }
     case SELECT_COLLECTION: {
       const presetName = action.payload;
       const currentCollection =
@@ -341,6 +355,11 @@ const saveCollection = (collectionName: string) => ({
   payload: collectionName,
 });
 
+const deleteCollection = (collectionName: string) => ({
+  type: DELETE_COLLECTION as typeof DELETE_COLLECTION,
+  payload: collectionName,
+});
+
 export const actions = {
   changeHighlightSite,
   removeHighlightSite,
@@ -351,6 +370,7 @@ export const actions = {
   receiveSites,
   selectCollection,
   saveCollection,
+  deleteCollection,
 };
 
 // selectors
