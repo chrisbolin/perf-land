@@ -279,7 +279,10 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, currentCollection };
     }
     case CLEAR_ALL_SELECTED_URLS: {
-      return { ...state, currentCollection: initialState.currentCollection };
+      return {
+        ...state,
+        currentCollection: initialState.currentCollection,
+      };
     }
     case SELECT_PRESET: {
       const urls = presets[action.payload];
