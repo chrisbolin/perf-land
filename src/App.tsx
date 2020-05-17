@@ -113,10 +113,15 @@ function Chart({
   const data = sites
     .map((site) => ({
       ...site,
+      isHighlighted: site.url === highlightedUrl,
       x: site.name,
       y: yTransform(site[field]) || 0,
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
+
+    
+    const brushDomainStart = data.findIndex(site => site.isHighlighted);
+
 
   return (
     <div className="Chart">
@@ -129,7 +134,10 @@ function Chart({
             allowDrag={false}
             allowResize={false}
             brushDimension="x"
-            brushDomain={{ x: [0.1, 0.3] }}
+            brushDomain={{ x: brushDomainStart >= 0 ? [brushDomainStart + 0.8, brushDomainStart + 1.75] : [0, 0]}}
+            brushStyle={{
+              fill: "#feeb5c", fillOpacity: 0.1
+            }}
           />
         }
       >
@@ -140,7 +148,7 @@ function Chart({
           style={{
             data: {
               fill: ({ datum }) =>
-                datum.url === highlightedUrl ? "black" : datum.color,
+                datum.isHighlighted ? "black" : datum.color,
             },
           }}
         />
@@ -155,12 +163,12 @@ function Chart({
           style={{
             axis: { stroke: "#ff0000", strokeWidth: 0 },
           }}
-          tickFormat={(t) => {
-            console.log("t", t, "highlighted", highlightedUrl);
-            return t === highlightedUrl ? `${t} ⭐️` : `${t}`;
+          tickFormat={(t, index) => {
+            const isHighlighted = data[index].isHighlighted;
+            return isHighlighted ? `${t} ⭐️` : `${t}`;
           }}
           tickLabelComponent={
-            <VictoryLabel textAnchor="start" dy={-16} dx={14} />
+            <VictoryLabel textAnchor="start" dy={-15} dx={14} />
           }
         />
       </VictoryChart>
