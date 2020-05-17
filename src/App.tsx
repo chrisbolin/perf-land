@@ -306,6 +306,7 @@ function App() {
               <h3>saved collections</h3>
               {Object.keys(savedCollections).map((collectionName) => (
                 <button
+                  className="Btn"
                   key={collectionName}
                   onClick={() =>
                     dispatch(actions.selectCollection(collectionName))
