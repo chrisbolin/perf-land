@@ -4,14 +4,15 @@
 
 html,
 body {
-  background-color: #bff3e6;
+  background-color: #b4f2e0;
   color: #000f08;
   font-family: "Work Sans", sans-serif;
   font-size: 24px;
+  line-height: 1.2;
 }
 
 body {
-  margin: 1rem;
+  margin: 1rem 2rem;
 }
 
 tspan {
@@ -55,7 +56,8 @@ a:visited {
   color: inherit;
 }
 
-td, th {
+td,
+th {
   padding: 0.25em 2em 0.25em 0;
 }
 
@@ -70,16 +72,18 @@ th {
 }
 
 .UrlSelect {
+  width: 100%;
   max-width: 400px;
-  margin: 2rem 0 0 0;
+  margin: 1rem 1rem 0 0;
 }
 
 .Btn {
-  margin: 1rem 0 0 0;
-  padding: 0.25rem 1.25rem;
+  margin: 1rem 1rem 0 0;
+  padding: 0.6rem 1.25rem;
 
   border-radius: 2rem;
-  background-color: #dbfff5;
+  background-color: #b4f2e0;
+  box-shadow: -0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf;
 }
 
 .SelectedSite {
@@ -88,24 +92,25 @@ th {
   flex-wrap: nowrap;
   justify-content: space-between;
 
-  margin: 2rem 0 0 0;
+  margin: 1rem 1rem 0 0;
 
   border-radius: 2rem;
-  font-size: 24px;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .SelectedSite:not(.highlighted) {
-  background-color: #bff3e6;
+  background-color: #b4f2e0;
   box-shadow: -0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf;
 }
 
 .SelectedSite.highlighted {
-  background-color: #b4f2e0;
+  background-color: #abedda;
   box-shadow: inset -6px -6px 16px 0 #dbfff5, inset 6px 6px 16px 0 #6ee0bf;
 }
 
 .SelectedSite-btn {
-  padding: 1rem 0 1rem 1.5rem;
+  padding: 0.6rem 0 0.6rem 1.25rem;
   text-align: left;
   width: 100%;
 
@@ -114,7 +119,7 @@ th {
 }
 
 .SelectedSite-removeBtn {
-  padding: 1rem 1.5rem;
+  padding: 0.6rem 1.25rem;
 }
 
 .SelectedSite-btn:focus,
@@ -129,7 +134,8 @@ th {
 }
 
 .Chart {
-  margin: 0 0 3rem 0;
+  flex: 1 0 300px;
+  margin: 3% 3% 0 0;
   max-width: 400px;
   padding: 1rem 1.5rem;
 
@@ -140,6 +146,7 @@ th {
 
 .Chart-title {
   font-size: 0.7rem;
+  font-weight: 800;
 }
 
 /* Layout */
@@ -164,26 +171,28 @@ th {
   max-width: 45ch;
 }
 
-.Grid {
-  display: grid;
-  grid-gap: 3rem;
-  grid-template-columns: 400px auto;
-  grid-template-areas: "sidebar content ";
-}
+.Websites {
+  margin-left: -1rem;
 
-.Grid-Sidebar {
-  grid-area: sidebar;
-}
-
-.Grid-Content {
-  grid-area: content;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 /* classes */
 
 .columns {
-  padding: 1rem 0 0 0;
-  column-width: 400px;
+  margin-right: -3%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.icon {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .text {
