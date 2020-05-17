@@ -98,11 +98,12 @@ a:visited {
 }
 
 .SelectedSite-btn {
-  padding: 1rem 1.5rem;
+  padding: 1rem 0 1rem 1.5rem;
   text-align: left;
   width: 100%;
 
   font-weight: 400;
+  word-break: break-all; /* I'm sorry */
 }
 
 .SelectedSite-removeBtn {
