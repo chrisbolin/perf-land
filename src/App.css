@@ -56,6 +56,14 @@ a:visited {
   color: inherit;
 }
 
+td, th {
+  padding: 0.25em 2em 0.25em 0;
+}
+
+th {
+  text-align: left;
+}
+
 /* components */
 
 .App {
