@@ -1,6 +1,12 @@
 import React, { useReducer } from "react";
 import Select from "react-select";
-import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
+import {
+  VictoryBar,
+  VictoryBrushContainer,
+  VictoryChart,
+  VictoryAxis,
+  VictoryLabel,
+} from "victory";
 
 import {
   AugmentedSite,
@@ -43,6 +49,7 @@ function SelectedSite({
         onClick={highlighted ? onHighlightRemoveClick : onHighlightClick}
       >
         {site.name}
+        {highlighted ? " ⭐" : null}
       </button>
       <button
         className="SelectedSite-removeBtn"
@@ -113,24 +120,48 @@ function Chart({
 
   return (
     <div className="Chart">
-      <VictoryChart padding={{ top: 40, right: 40, bottom: 50, left: 70 }}>
-        <VictoryAxis
-          label={name}
-          tickLabelComponent={
-            <VictoryLabel textAnchor="start" dy={-16} dx={12} />
-          }
-        />
-        <VictoryAxis dependentAxis />
+      <span className="Chart-title">{name}</span>
+      <VictoryChart
+        domainPadding={20}
+        padding={{ top: 20, right: 20, bottom: 50, left: 1 }}
+        containerComponent={
+          <VictoryBrushContainer
+            allowDrag={false}
+            allowResize={false}
+            brushDimension="x"
+            brushDomain={{ x: [0.1, 0.3] }}
+          />
+        }
+      >
         <VictoryBar
           horizontal
           data={data}
-          barWidth={12}
+          barWidth={10}
           style={{
             data: {
               fill: ({ datum }) =>
                 datum.url === highlightedUrl ? "black" : datum.color,
             },
           }}
+        />
+        <VictoryAxis
+          dependentAxis
+          style={{
+            axis: { stroke: "#000", strokeWidth: 1 },
+            grid: { stroke: "#fff" },
+          }}
+        />
+        <VictoryAxis
+          style={{
+            axis: { stroke: "#ff0000", strokeWidth: 0 },
+          }}
+          tickFormat={(t) => {
+            console.log("t", t, "highlighted", highlightedUrl);
+            return t === highlightedUrl ? `${t} ⭐️` : `${t}`;
+          }}
+          tickLabelComponent={
+            <VictoryLabel textAnchor="start" dy={-16} dx={14} />
+          }
         />
       </VictoryChart>
     </div>
