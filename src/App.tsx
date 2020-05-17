@@ -116,7 +116,8 @@ function Chart({
       x: site.name,
       y: yTransform(site[field]) || 0,
     }))
-    .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
+    // standard sort: ascending; reverse: descending
+    .sort((a, b) => (a.y - b.y) * (reverse ? 1 : -1));
 
   const brushDomainStart = data.findIndex((site) => site.isHighlighted);
 
