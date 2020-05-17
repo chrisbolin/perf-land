@@ -65,9 +65,8 @@ function SelectedSite({
 function SiteDetail({ site }: { site: AugmentedSite }) {
   return (
     <tr>
-      <td>{site.name}</td>
       <td>
-        <a href={site.url}>{site.url}</a>
+        <a href={site.url}>{site.name}</a>
       </td>
       <td>{site.cdn || "none detected"}</td>
       <td>
@@ -421,8 +420,7 @@ function App() {
         <table className="SiteDetails">
           <thead>
             <tr>
-              <th>name</th>
-              <th>full URL</th>
+              <th>site</th>
               <th>cdn</th>
               <th>profile time</th>
             </tr>
