@@ -43,13 +43,13 @@ function SelectedSite({
   onHighlightRemoveClick: EventCallbackFunction;
 }) {
   return (
-    <div className={`SelectedSite ${highlighted && `highlighted`}`}>
+    <div className={`SelectedSite ${highlighted ? `highlighted` : ``}`}>
       <button
-        className={`SelectedSite-btn ${highlighted && "highlighted"}`}
+        className={`SelectedSite-btn ${highlighted ? `highlighted` : ``}`}
         onClick={highlighted ? onHighlightRemoveClick : onHighlightClick}
       >
         {site.name}
-        {highlighted ? " ⭐" : null}
+        <span className="icon">{highlighted ? " ⭐" : null}</span>
       </button>
       <button
         className="SelectedSite-removeBtn"
@@ -124,6 +124,7 @@ function Chart({
     <div className="Chart">
       <span className="Chart-title">{name}</span>
       <VictoryChart
+        width={360}
         height={data.length * 60}
         domainPadding={20}
         padding={{ top: 20, right: 20, bottom: 50, left: 1 }}
@@ -242,42 +243,44 @@ function App() {
           </p>
         </div>
       </div>
-      <div className="Grid">
-        <div className="Grid-Sidebar">
-          <h2>websites</h2>
-          {!!urls.length && (
-            <div>
-              {currentSites.map((site) => (
-                <SelectedSite
-                  key={site.url}
-                  site={site}
-                  onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
-                  highlighted={site.url === highlightedUrl}
-                  onHighlightClick={() =>
-                    dispatch(actions.changeHighlightSite(site.url))
-                  }
-                  onHighlightRemoveClick={() =>
-                    dispatch(actions.removeHighlightSite())
-                  }
-                />
-              ))}
-              <Select
-                className="UrlSelect"
-                options={state.urls.map(({ url }) => ({
-                  value: url,
-                  label: url,
-                }))}
-                onChange={(option) => {
-                  if (!option || "length" in option) return;
-                  dispatch(actions.addUrl(option.value));
-                }}
-                onInputChange={(input: string) => {
-                  effects.searchForUrls(state, dispatch, input);
-                }}
-                inputValue={state.search}
-                value={null}
-                placeholder="Add website..."
+
+      <h2>websites</h2>
+      {!!urls.length && (
+        <>
+          <div className="Websites">
+            {currentSites.map((site) => (
+              <SelectedSite
+                key={site.url}
+                site={site}
+                onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
+                highlighted={site.url === highlightedUrl}
+                onHighlightClick={() =>
+                  dispatch(actions.changeHighlightSite(site.url))
+                }
+                onHighlightRemoveClick={() =>
+                  dispatch(actions.removeHighlightSite())
+                }
               />
+            ))}
+
+            <Select
+              className="UrlSelect"
+              options={state.urls.map(({ url }) => ({
+                value: url,
+                label: url,
+              }))}
+              onChange={(option) => {
+                if (!option || "length" in option) return;
+                dispatch(actions.addUrl(option.value));
+              }}
+              onInputChange={(input: string) => {
+                effects.searchForUrls(state, dispatch, input);
+              }}
+              inputValue={state.search}
+              value={null}
+              placeholder="Add website..."
+            />
+            <div className="Websites-Actions">
               <button
                 className="Btn"
                 onClick={() => dispatch(actions.clearAllSelectedUrls())}
@@ -300,119 +303,116 @@ function App() {
                 </button>
               )}
             </div>
-          )}
-          {!!Object.keys(savedCollections).length && (
-            <div>
-              <h3>saved collections</h3>
-              {Object.keys(savedCollections).map((collectionName) => (
-                <button
-                  className="Btn"
-                  key={collectionName}
-                  onClick={() =>
-                    dispatch(actions.selectCollection(collectionName))
-                  }
-                >
-                  {collectionName}
-                </button>
-              ))}
-            </div>
-          )}
-          <div>
-            <h3>preset collections</h3>
-            {Object.keys(presets).map((presetKey) => (
-              <button
-                className="Btn"
-                key={presetKey}
-                onClick={() =>
-                  dispatch(actions.selectPresetUrls(presetKey as PresetName))
-                }
-              >
-                {presetKey}
-              </button>
-            ))}
           </div>
+        </>
+      )}
+      {!!Object.keys(savedCollections).length && (
+        <div>
+          <h3>saved collections</h3>
+          {Object.keys(savedCollections).map((collectionName) => (
+            <button
+              className="Btn"
+              key={collectionName}
+              onClick={() => dispatch(actions.selectCollection(collectionName))}
+            >
+              {collectionName}
+            </button>
+          ))}
         </div>
-        <div className="Grid-Content">
-          {!!currentSites.length && <h2>comparisons</h2>}
-          <div className="columns">
-            <Chart
-              sites={currentSites}
-              name="Time to first byte (ms)"
-              field="TTFB"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="First contentful paint (ms)"
-              field="firstContentfulPaint"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="First meaningful paint (ms)"
-              field="firstMeaningfulPaint"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="First cpu idle (ms)"
-              field="firstCPUIdle"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Time to interactive (ms)"
-              field="timeToInteractive"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Max potential first input delay (ms)"
-              field="maxPotentialFirstInputDelay"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Speed index"
-              field="speedIndex"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Lighthouse performance score"
-              field="performanceScore"
-              highlightedUrl={highlightedUrl}
-              reverse
-            />
-            <Chart
-              sites={currentSites}
-              name="JavaScript payload (kB)"
-              field="bytesJS"
-              highlightedUrl={highlightedUrl}
-              yTransform={(y) => Math.round(y / 1000)}
-            />
-            <Chart
-              sites={currentSites}
-              name="Image payload (kB)"
-              field="bytesImg"
-              highlightedUrl={highlightedUrl}
-              yTransform={(y) => Math.round(y / 1000)}
-            />
-            <Chart
-              sites={currentSites}
-              name="Total request payload (kB)"
-              field="bytesTotal"
-              highlightedUrl={highlightedUrl}
-              yTransform={(y) => Math.round(y / 1000)}
-            />
-            <Chart
-              sites={currentSites}
-              name="Number of requests"
-              field="reqTotal"
-              highlightedUrl={highlightedUrl}
-            />
-          </div>
-        </div>
+      )}
+      <div>
+        <h3>preset collections</h3>
+        {Object.keys(presets).map((presetKey) => (
+          <button
+            className="Btn"
+            key={presetKey}
+            onClick={() =>
+              dispatch(actions.selectPresetUrls(presetKey as PresetName))
+            }
+          >
+            {presetKey}
+          </button>
+        ))}
+      </div>
+
+      {!!currentSites.length && <h2>comparisons</h2>}
+      <div className="columns">
+        <Chart
+          sites={currentSites}
+          name="Time to first byte (ms)"
+          field="TTFB"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="First contentful paint (ms)"
+          field="firstContentfulPaint"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="First meaningful paint (ms)"
+          field="firstMeaningfulPaint"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="First cpu idle (ms)"
+          field="firstCPUIdle"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Time to interactive (ms)"
+          field="timeToInteractive"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Max potential first input delay (ms)"
+          field="maxPotentialFirstInputDelay"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Speed index"
+          field="speedIndex"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Lighthouse performance score"
+          field="performanceScore"
+          highlightedUrl={highlightedUrl}
+          reverse
+        />
+        <Chart
+          sites={currentSites}
+          name="JavaScript payload (kB)"
+          field="bytesJS"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          sites={currentSites}
+          name="Image payload (kB)"
+          field="bytesImg"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          sites={currentSites}
+          name="Total request payload (kB)"
+          field="bytesTotal"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          sites={currentSites}
+          name="Number of requests"
+          field="reqTotal"
+          highlightedUrl={highlightedUrl}
+        />
       </div>
 
       {!!currentSites.length && <h2>site details</h2>}
