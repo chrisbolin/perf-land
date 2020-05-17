@@ -62,21 +62,18 @@ function SelectedSite({
   );
 }
 
-function SiteDetails({ site }: { site: AugmentedSite }) {
+function SiteDetail({ site }: { site: AugmentedSite }) {
   return (
-    <div className="SiteDetails">
-      <h4>{site.name}</h4>
-      <p>
-        full URL: <a href={site.url}>{site.url}</a>
-      </p>
-      <p>cdn: {site.cdn || "none detected"}</p>
-      <p>
-        profile time:{" "}
+    <tr>
+      <td>{site.name}</td>
+      <td><a href={site.url}>{site.url}</a></td>
+      <td>{site.cdn || "none detected"}</td>
+      <td>
         {new Date(site.startedDateTime * 1000).toLocaleString(undefined, {
           timeZoneName: "short",
         })}
-      </p>
-    </div>
+      </td>
+    </tr>
   );
 }
 
@@ -127,6 +124,7 @@ function Chart({
     <div className="Chart">
       <span className="Chart-title">{name}</span>
       <VictoryChart
+        height={data.length * 60}
         domainPadding={20}
         padding={{ top: 20, right: 20, bottom: 50, left: 1 }}
         containerComponent={
@@ -134,7 +132,7 @@ function Chart({
             allowDrag={false}
             allowResize={false}
             brushDimension="x"
-            brushDomain={{ x: brushDomainStart >= 0 ? [brushDomainStart + 0.8, brushDomainStart + 1.75] : [0, 0]}}
+            brushDomain={{ x: brushDomainStart >= 0 ? [brushDomainStart + 0.6, brushDomainStart + 1.75] : [0, 0]}}
             brushStyle={{
               fill: "#feeb5c", fillOpacity: 0.1
             }}
@@ -412,9 +410,21 @@ function App() {
 
       {!!currentSites.length && <h2>site details</h2>}
       <div>
-        {currentSites.map((site) => (
-          <SiteDetails key={site.url} site={site} />
-        ))}
+        <table className="SiteDetails">
+          <thead>
+            <tr>
+              <th>name</th>
+              <th>full URL</th>
+              <th>cdn</th>
+              <th>profile time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentSites.map((site) => (
+              <SiteDetail key={site.url} site={site} />
+            ))}
+          </tbody>
+        </table>
       </div>
       <div className="footer">
         <p>
