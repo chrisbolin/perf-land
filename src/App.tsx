@@ -66,7 +66,9 @@ function SiteDetail({ site }: { site: AugmentedSite }) {
   return (
     <tr>
       <td>{site.name}</td>
-      <td><a href={site.url}>{site.url}</a></td>
+      <td>
+        <a href={site.url}>{site.url}</a>
+      </td>
       <td>{site.cdn || "none detected"}</td>
       <td>
         {new Date(site.startedDateTime * 1000).toLocaleString(undefined, {
@@ -116,9 +118,7 @@ function Chart({
     }))
     .sort((a, b) => (a.y - b.y) * (reverse ? -1 : 1));
 
-    
-    const brushDomainStart = data.findIndex(site => site.isHighlighted);
-
+  const brushDomainStart = data.findIndex((site) => site.isHighlighted);
 
   return (
     <div className="Chart">
@@ -132,9 +132,15 @@ function Chart({
             allowDrag={false}
             allowResize={false}
             brushDimension="x"
-            brushDomain={{ x: brushDomainStart >= 0 ? [brushDomainStart + 0.6, brushDomainStart + 1.75] : [0, 0]}}
+            brushDomain={{
+              x:
+                brushDomainStart >= 0
+                  ? [brushDomainStart + 0.6, brushDomainStart + 1.75]
+                  : [0, 0],
+            }}
             brushStyle={{
-              fill: "#feeb5c", fillOpacity: 0.1
+              fill: "#feeb5c",
+              fillOpacity: 0.1,
             }}
           />
         }
