@@ -8,11 +8,12 @@ import {
   unionBy,
 } from "lodash";
 import { useEffect } from "react";
+import colors from "colorkind/dist/12";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
-const MIN_SEARCH_STRING_LENGTH = 5;
+export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
 
 export const presets = {
@@ -61,21 +62,6 @@ export const presets = {
     "https://www.petflow.com/",
   ],
 };
-
-const colors = [
-  "#332288",
-  "#117733",
-  "#6699cc",
-  "#ddcc77",
-  "#999933",
-  "#cc6677",
-  "#aa4466",
-  "#882255",
-  "#aa4499",
-  "#44aa99",
-  "#661100",
-  "#88ccee",
-];
 
 export type PresetName = keyof typeof presets;
 
@@ -138,6 +124,8 @@ interface State {
   currentCollection: Collection;
   search: string;
   savedCollections: SavedCollections;
+  pendingSearches: string[];
+  pendingSites: string[];
 }
 
 const initialState: State = {
@@ -147,6 +135,8 @@ const initialState: State = {
   search: "",
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
+  pendingSearches: [],
+  pendingSites: [],
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -181,14 +171,17 @@ export const initializeState = (): State => {
 
 // action types
 
-const RECEIVE_SITES = "RECEIVE_SITES";
-const RECEIVE_URLS = "RECEIVE_URLS";
+const SITES_REQUEST = "SITES_REQUEST";
+const SITES_SUCCESS = "SITES_SUCCESS";
+const SEARCH_CHANGE = "SEARCH_CHANGE";
+const SEARCH_REQUEST = "SEARCH_REQUEST";
+const SEARCH_SUCCESS = "SEARCH_SUCCESS";
+const SEARCH_FAILURE = "SEARCH_FAILURE";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
 const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
 const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
 const SELECT_PRESET = "SELECT_PRESET";
 const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
-const CHANGE_SEARCH = "CHANGE_SEARCH";
 const SAVE_COLLECTION = "SAVE_COLLECTION";
 const SELECT_COLLECTION = "SELECT_COLLECTION";
 const DELETE_COLLECTION = "DELETE_COLLECTION";
@@ -206,7 +199,10 @@ interface StringAction {
   type:
     | typeof ADD_SELECTED_URL
     | typeof REMOVE_SELECTED_URL
-    | typeof CHANGE_SEARCH
+    | typeof SEARCH_REQUEST
+    | typeof SEARCH_CHANGE
+    | typeof SEARCH_FAILURE
+    | typeof SITES_REQUEST
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
     | typeof DELETE_COLLECTION
@@ -219,19 +215,19 @@ interface SelectPresetAction {
   payload: PresetName;
 }
 
-interface ReceiveSitesAction {
-  type: typeof RECEIVE_SITES;
-  payload: Site[];
+interface SitesSuccessAction {
+  type: typeof SITES_SUCCESS;
+  payload: { sites: Site[]; urlString: string };
 }
 
-interface ReceiveUrlsAction {
-  type: typeof RECEIVE_URLS;
-  payload: UrlDetails[];
+interface SearchSuccessAction {
+  type: typeof SEARCH_SUCCESS;
+  payload: { urlDetails: UrlDetails[]; search: string };
 }
 
 type Action =
-  | ReceiveUrlsAction
-  | ReceiveSitesAction
+  | SearchSuccessAction
+  | SitesSuccessAction
   | SelectPresetAction
   | StringAction
   | BareAction;
@@ -245,17 +241,59 @@ const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
     return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
   });
 
+const removeOneMatch = (list: string[], item: string) => {
+  const listCopy = [...list];
+  const removeIndex = listCopy.indexOf(item);
+  if (removeIndex > -1) {
+    listCopy.splice(removeIndex, 1);
+  }
+  return listCopy;
+};
+
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case RECEIVE_URLS: {
+    case SEARCH_CHANGE: {
       return {
         ...state,
-        urls: mergeUrlLists(state.urls, action.payload),
+        search: action.payload,
       };
     }
-    case RECEIVE_SITES: {
-      const newSites = keyBy(action.payload, "url");
-      const newUrls = action.payload.map(({ url, rank2017 }) => ({
+    case SEARCH_REQUEST: {
+      return {
+        ...state,
+        pendingSearches: [...state.pendingSearches, action.payload],
+      };
+    }
+    case SEARCH_SUCCESS: {
+      const { urlDetails, search } = action.payload;
+      const pendingSearches = removeOneMatch(state.pendingSearches, search);
+
+      return {
+        ...state,
+        urls: mergeUrlLists(state.urls, urlDetails),
+        pendingSearches,
+      };
+    }
+    case SEARCH_FAILURE: {
+      const pendingSearches = removeOneMatch(
+        state.pendingSearches,
+        action.payload
+      );
+      return {
+        ...state,
+        pendingSearches,
+      };
+    }
+    case SITES_REQUEST: {
+      return {
+        ...state,
+        pendingSites: [...state.pendingSites, action.payload],
+      };
+    }
+    case SITES_SUCCESS: {
+      const { sites, urlString } = action.payload;
+      const newSites = keyBy(sites, "url");
+      const newUrls = sites.map(({ url, rank2017 }) => ({
         url,
         rank2017,
       }));
@@ -264,6 +302,7 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         sites: { ...state.sites, ...newSites },
         urls: mergeUrlLists(state.urls, newUrls),
+        pendingSites: removeOneMatch(state.pendingSites, urlString),
       };
     }
     case ADD_SELECTED_URL: {
@@ -299,9 +338,6 @@ export const reducer = (state: State, action: Action): State => {
     case CHANGE_HIGHLIGHTED_URL: {
       return { ...state, highlightedUrl: action.payload };
     }
-    case CHANGE_SEARCH: {
-      return { ...state, search: action.payload };
-    }
     case SAVE_COLLECTION: {
       const collectionName = action.payload;
       const currentCollection = {
@@ -330,53 +366,73 @@ export const reducer = (state: State, action: Action): State => {
 
 // actions
 
-const changeHighlightSite = (url: string) => ({
-  type: CHANGE_HIGHLIGHTED_URL as typeof CHANGE_HIGHLIGHTED_URL,
+const changeHighlightSite = (url: string): Action => ({
+  type: CHANGE_HIGHLIGHTED_URL,
   payload: url,
 });
 
-const removeHighlightSite = () => ({
-  type: CHANGE_HIGHLIGHTED_URL as typeof CHANGE_HIGHLIGHTED_URL,
+const removeHighlightSite = (): Action => ({
+  type: CHANGE_HIGHLIGHTED_URL,
   payload: "",
 });
 
-const addUrl = (url: string) => ({
-  type: ADD_SELECTED_URL as typeof ADD_SELECTED_URL,
+const addUrl = (url: string): Action => ({
+  type: ADD_SELECTED_URL,
   payload: url,
 });
 
-const removeUrl = (url: string) => ({
-  type: REMOVE_SELECTED_URL as typeof REMOVE_SELECTED_URL,
+const removeUrl = (url: string): Action => ({
+  type: REMOVE_SELECTED_URL,
   payload: url,
 });
 
-const clearAllSelectedUrls = () => ({
-  type: CLEAR_ALL_SELECTED_URLS as typeof CLEAR_ALL_SELECTED_URLS,
+const clearAllSelectedUrls = (): Action => ({
+  type: CLEAR_ALL_SELECTED_URLS,
 });
 
-const selectPresetUrls = (presetName: PresetName) => ({
-  type: SELECT_PRESET as typeof SELECT_PRESET,
+const selectPresetUrls = (presetName: PresetName): Action => ({
+  type: SELECT_PRESET,
   payload: presetName,
 });
 
-const receiveSites = (sites: Site[]) => ({
-  type: RECEIVE_SITES as typeof RECEIVE_SITES,
-  payload: sites,
+const sitesRequest = (urlsString: string): Action => ({
+  type: SITES_REQUEST,
+  payload: urlsString,
 });
 
-const selectCollection = (collectionName: string) => ({
-  type: SELECT_COLLECTION as typeof SELECT_COLLECTION,
+const sitesSuccess = (sites: Site[], urlString: string): Action => ({
+  type: SITES_SUCCESS,
+  payload: { sites, urlString },
+});
+
+const selectCollection = (collectionName: string): Action => ({
+  type: SELECT_COLLECTION,
   payload: collectionName,
 });
 
-const saveCollection = (collectionName: string) => ({
-  type: SAVE_COLLECTION as typeof SAVE_COLLECTION,
+const saveCollection = (collectionName: string): Action => ({
+  type: SAVE_COLLECTION,
   payload: collectionName,
 });
 
-const deleteCollection = (collectionName: string) => ({
-  type: DELETE_COLLECTION as typeof DELETE_COLLECTION,
+const deleteCollection = (collectionName: string): Action => ({
+  type: DELETE_COLLECTION,
   payload: collectionName,
+});
+
+const searchRequest = (search: string): Action => ({
+  type: SEARCH_REQUEST,
+  payload: search,
+});
+
+const searchFailure = (search: string): Action => ({
+  type: SEARCH_FAILURE,
+  payload: search,
+});
+
+const searchSuccess = (search: string, urlDetails: UrlDetails[]): Action => ({
+  type: SEARCH_SUCCESS,
+  payload: { urlDetails, search },
 });
 
 export const actions = {
@@ -386,7 +442,7 @@ export const actions = {
   removeUrl,
   clearAllSelectedUrls,
   selectPresetUrls,
-  receiveSites,
+  sitesSuccess,
   selectCollection,
   saveCollection,
   deleteCollection,
@@ -406,7 +462,7 @@ const augmentSite = (site: Site, index: number): AugmentedSite => {
   return {
     ...site,
     name,
-    color: colors[index],
+    color: colors[index] || "black",
   };
 };
 
@@ -421,7 +477,16 @@ const currentSites = (state: State): AugmentedSite[] =>
 const viewingSavedCollection = (state: State): boolean =>
   !!state.savedCollections[state.currentCollection.name];
 
-export const selectors = { currentSites, viewingSavedCollection };
+const searching = (state: State): boolean => state.pendingSearches.length > 0;
+
+const loadingSites = (state: State): boolean => state.pendingSites.length > 0;
+
+export const selectors = {
+  currentSites,
+  viewingSavedCollection,
+  searching,
+  loadingSites,
+};
 
 // effects
 
@@ -433,11 +498,13 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
 
     if (!urlsWithoutData.length) return;
 
-    const requestUrl = `${API_ROOT}?url=${urlsWithoutData.join(",")}`;
+    const urlsString = urlsWithoutData.join(",");
+    const requestUrl = `${API_ROOT}?url=${urlsString}`;
+    dispatch(sitesRequest(urlsString));
     fetch(requestUrl)
       .then((res) => res.json())
-      .then((data) => {
-        dispatch(actions.receiveSites(data));
+      .then((sites) => {
+        dispatch(sitesSuccess(sites, urlsString));
       });
   }, [dispatch, state.currentCollection.sites, state.sites]);
 };
@@ -459,7 +526,7 @@ const searchForUrls = (
   search: string
 ) => {
   dispatch({
-    type: CHANGE_SEARCH as typeof CHANGE_SEARCH,
+    type: SEARCH_CHANGE,
     payload: search,
   });
 
@@ -469,16 +536,19 @@ const searchForUrls = (
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
   const requestUrl = `${API_ROOT}?search2=${search}`;
-  debounceSearchNetworkRequest(() =>
-    fetch(requestUrl)
+
+  debounceSearchNetworkRequest(() => {
+    dispatch(searchRequest(search));
+    return fetch(requestUrl)
       .then((res) => res.json())
-      .then((urls) => {
-        dispatch({
-          type: RECEIVE_URLS,
-          payload: urls,
-        });
+      .then((urlDetails) => {
+        dispatch(searchSuccess(search, urlDetails));
       })
-  );
+      .catch((error) => {
+        console.error(error);
+        dispatch(searchFailure(search));
+      });
+  });
 };
 
 export const effects = { useSelectedSites, usePersistState, searchForUrls };

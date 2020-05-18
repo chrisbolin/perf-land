@@ -17,6 +17,7 @@ import {
   actions,
   presets,
   effects,
+  MIN_SEARCH_STRING_LENGTH,
 } from "./state";
 import "./App.css";
 
@@ -60,6 +61,10 @@ function SelectedSite({
       </button>
     </div>
   );
+}
+
+function LoadingSites() {
+  return <span>loading...</span>;
 }
 
 function SiteDetail({ site }: { site: AugmentedSite }) {
@@ -152,8 +157,7 @@ function Chart({
           barWidth={10}
           style={{
             data: {
-              fill: ({ datum }) =>
-                datum.isHighlighted ? "black" : datum.color,
+              fill: ({ datum }) => datum.color,
             },
           }}
         />
@@ -181,14 +185,50 @@ function Chart({
   );
 }
 
+const urlSelectStyles = {
+  control: (provided: Object) => ({
+    ...provided,
+    backgroundColor: "#ffffff",
+    border: "none",
+    borderRadius: "2rem",
+    boxShadow: "-0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf",
+    margin: "0",
+    minHeight: "0",
+  }),
+  valueContainer: (provided: Object) => ({
+    ...provided,
+    padding: "0.5rem 1.25rem",
+  }),
+  indicatorsContainer: (provided: Object) => ({
+    ...provided,
+    paddingRight: "0.5rem",
+  }),
+  indicatorSeparator: (provided: Object) => ({
+    ...provided,
+    margin: "0 0.25rem 0 0",
+  }),
+  menu: (provided: Object, state: Object) => ({
+    ...provided,
+    borderRadius: "1rem",
+    boxShadow: "0.5em 0.5em 1.5em 0 #6ee0bf",
+    padding: "0.6rem 0",
+  }),
+  option: (provided: Object, state: Object) => ({
+    ...provided,
+    padding: "0.25em 1.25rem",
+  }),
+};
+
 function App() {
   const [state, dispatch] = useReducer(reducer, undefined, initializeState);
 
   window.state = state;
 
-  const { highlightedUrl, urls, savedCollections } = state;
+  const { highlightedUrl, savedCollections, urls } = state;
   const currentSites = selectors.currentSites(state);
   const viewingSavedCollection = selectors.viewingSavedCollection(state);
+  const searching = selectors.searching(state);
+  const loadingSites = selectors.loadingSites(state);
 
   // effects
 
@@ -204,40 +244,6 @@ function App() {
     if (name) {
       dispatch(actions.saveCollection(name));
     }
-  };
-
-  const urlSelectStyles = {
-    control: (provided: object) => ({
-      ...provided,
-      backgroundColor: "#ffffff",
-      border: "none",
-      borderRadius: "2rem",
-      boxShadow: "-0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf",
-      margin: "0",
-      minHeight: "0",
-    }),
-    valueContainer: (provided: object) => ({
-      ...provided,
-      padding: "0.5rem 1.25rem",
-    }),
-    indicatorsContainer: (provided: object) => ({
-      ...provided,
-      paddingRight: "0.5rem",
-    }),
-    indicatorSeparator: (provided: object) => ({
-      ...provided,
-      margin: "0 0.25rem 0 0",
-    }),
-    menu: (provided: object, state: object) => ({
-      ...provided,
-      borderRadius: "1rem",
-      boxShadow: "0.5em 0.5em 1.5em 0 #6ee0bf",
-      padding: "0.6rem 0",
-    }),
-    option: (provided: object, state: object) => ({
-      ...provided,
-      padding: "0.25em 1.25rem",
-    }),
   };
 
   return (
@@ -379,6 +385,8 @@ function App() {
               />
             ))}
 
+            {loadingSites && <LoadingSites />}
+
             <Select
               className="UrlSelect"
               options={state.urls.map(({ url }) => ({
@@ -396,12 +404,21 @@ function App() {
               value={null}
               placeholder="add website..."
               styles={urlSelectStyles}
+              isLoading={searching}
+              loadingMessage={({ inputValue }) =>
+                `searching for "${inputValue}"...`
+              }
+              noOptionsMessage={({ inputValue }) =>
+                inputValue.length < MIN_SEARCH_STRING_LENGTH
+                  ? "please be more specific"
+                  : `no results for "${inputValue}"`
+              }
             />
           </div>
         </>
       )}
 
-      {!!currentSites.length && <h2>comparisons</h2>}
+      <h2>comparisons</h2>
       <div className="columns">
         <Chart
           sites={currentSites}
@@ -481,7 +498,7 @@ function App() {
         />
       </div>
 
-      {!!currentSites.length && <h2>site details</h2>}
+      <h2>site details</h2>
       <div>
         <table className="SiteDetails">
           <thead>
