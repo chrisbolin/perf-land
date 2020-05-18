@@ -8,6 +8,7 @@ import {
   unionBy,
 } from "lodash";
 import { useEffect } from "react";
+import colors from "colorkind/dist/12";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
@@ -61,21 +62,6 @@ export const presets = {
     "https://www.petflow.com/",
   ],
 };
-
-const colors = [
-  "#332288",
-  "#117733",
-  "#6699cc",
-  "#ddcc77",
-  "#999933",
-  "#cc6677",
-  "#aa4466",
-  "#882255",
-  "#aa4499",
-  "#44aa99",
-  "#661100",
-  "#88ccee",
-];
 
 export type PresetName = keyof typeof presets;
 
