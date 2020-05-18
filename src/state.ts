@@ -354,52 +354,52 @@ export const reducer = (state: State, action: Action): State => {
 
 // actions
 
-const changeHighlightSite = (url: string) => ({
-  type: CHANGE_HIGHLIGHTED_URL as typeof CHANGE_HIGHLIGHTED_URL,
+const changeHighlightSite = (url: string): Action => ({
+  type: CHANGE_HIGHLIGHTED_URL,
   payload: url,
 });
 
-const removeHighlightSite = () => ({
-  type: CHANGE_HIGHLIGHTED_URL as typeof CHANGE_HIGHLIGHTED_URL,
+const removeHighlightSite = (): Action => ({
+  type: CHANGE_HIGHLIGHTED_URL,
   payload: "",
 });
 
-const addUrl = (url: string) => ({
-  type: ADD_SELECTED_URL as typeof ADD_SELECTED_URL,
+const addUrl = (url: string): Action => ({
+  type: ADD_SELECTED_URL,
   payload: url,
 });
 
-const removeUrl = (url: string) => ({
-  type: REMOVE_SELECTED_URL as typeof REMOVE_SELECTED_URL,
+const removeUrl = (url: string): Action => ({
+  type: REMOVE_SELECTED_URL,
   payload: url,
 });
 
-const clearAllSelectedUrls = () => ({
-  type: CLEAR_ALL_SELECTED_URLS as typeof CLEAR_ALL_SELECTED_URLS,
+const clearAllSelectedUrls = (): Action => ({
+  type: CLEAR_ALL_SELECTED_URLS,
 });
 
-const selectPresetUrls = (presetName: PresetName) => ({
-  type: SELECT_PRESET as typeof SELECT_PRESET,
+const selectPresetUrls = (presetName: PresetName): Action => ({
+  type: SELECT_PRESET,
   payload: presetName,
 });
 
-const receiveSites = (sites: Site[]) => ({
-  type: RECEIVE_SITES as typeof RECEIVE_SITES,
+const receiveSites = (sites: Site[]): Action => ({
+  type: RECEIVE_SITES,
   payload: sites,
 });
 
-const selectCollection = (collectionName: string) => ({
-  type: SELECT_COLLECTION as typeof SELECT_COLLECTION,
+const selectCollection = (collectionName: string): Action => ({
+  type: SELECT_COLLECTION,
   payload: collectionName,
 });
 
-const saveCollection = (collectionName: string) => ({
-  type: SAVE_COLLECTION as typeof SAVE_COLLECTION,
+const saveCollection = (collectionName: string): Action => ({
+  type: SAVE_COLLECTION,
   payload: collectionName,
 });
 
-const deleteCollection = (collectionName: string) => ({
-  type: DELETE_COLLECTION as typeof DELETE_COLLECTION,
+const deleteCollection = (collectionName: string): Action => ({
+  type: DELETE_COLLECTION,
   payload: collectionName,
 });
 
