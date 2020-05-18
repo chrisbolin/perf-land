@@ -392,7 +392,7 @@ const augmentSite = (site: Site, index: number): AugmentedSite => {
   return {
     ...site,
     name,
-    color: colors[index],
+    color: colors[index] || "black",
   };
 };
 

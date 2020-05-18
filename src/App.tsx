@@ -151,8 +151,7 @@ function Chart({
           barWidth={10}
           style={{
             data: {
-              fill: ({ datum }) =>
-                datum.isHighlighted ? "black" : datum.color,
+              fill: ({ datum }) => datum.color,
             },
           }}
         />
