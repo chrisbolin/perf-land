@@ -169,7 +169,7 @@ export const initializeState = (): State => {
 
 // action types
 
-const RECEIVE_SITES = "RECEIVE_SITES";
+const SITES_SUCCESS = "SITES_SUCCESS";
 const SEARCH_CHANGE = "SEARCH_CHANGE";
 const SEARCH_START = "SEARCH_START";
 const SEARCH_SUCCESS = "SEARCH_SUCCESS";
@@ -211,8 +211,8 @@ interface SelectPresetAction {
   payload: PresetName;
 }
 
-interface ReceiveSitesAction {
-  type: typeof RECEIVE_SITES;
+interface SitesSuccessAction {
+  type: typeof SITES_SUCCESS;
   payload: Site[];
 }
 
@@ -223,7 +223,7 @@ interface SearchSuccessAction {
 
 type Action =
   | SearchSuccessAction
-  | ReceiveSitesAction
+  | SitesSuccessAction
   | SelectPresetAction
   | StringAction
   | BareAction;
@@ -280,7 +280,7 @@ export const reducer = (state: State, action: Action): State => {
         pendingSearches,
       };
     }
-    case RECEIVE_SITES: {
+    case SITES_SUCCESS: {
       const newSites = keyBy(action.payload, "url");
       const newUrls = action.payload.map(({ url, rank2017 }) => ({
         url,
@@ -383,8 +383,8 @@ const selectPresetUrls = (presetName: PresetName): Action => ({
   payload: presetName,
 });
 
-const receiveSites = (sites: Site[]): Action => ({
-  type: RECEIVE_SITES,
+const sitesSuccess = (sites: Site[]): Action => ({
+  type: SITES_SUCCESS,
   payload: sites,
 });
 
@@ -403,6 +403,21 @@ const deleteCollection = (collectionName: string): Action => ({
   payload: collectionName,
 });
 
+const searchStart = (search: string): Action => ({
+  type: SEARCH_START,
+  payload: search,
+});
+
+const searchFailure = (search: string): Action => ({
+  type: SEARCH_FAILURE,
+  payload: search,
+});
+
+const searchSuccess = (search: string, urlDetails: UrlDetails[]): Action => ({
+  type: SEARCH_SUCCESS,
+  payload: { urlDetails, search },
+});
+
 export const actions = {
   changeHighlightSite,
   removeHighlightSite,
@@ -410,7 +425,7 @@ export const actions = {
   removeUrl,
   clearAllSelectedUrls,
   selectPresetUrls,
-  receiveSites,
+  sitesSuccess,
   selectCollection,
   saveCollection,
   deleteCollection,
@@ -462,8 +477,8 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
     const requestUrl = `${API_ROOT}?url=${urlsWithoutData.join(",")}`;
     fetch(requestUrl)
       .then((res) => res.json())
-      .then((data) => {
-        dispatch(actions.receiveSites(data));
+      .then((sites) => {
+        dispatch(actions.sitesSuccess(sites));
       });
   }, [dispatch, state.currentCollection.sites, state.sites]);
 };
@@ -495,25 +510,17 @@ const searchForUrls = (
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
   const requestUrl = `${API_ROOT}?search2=${search}`;
+
   debounceSearchNetworkRequest(() => {
-    dispatch({
-      type: SEARCH_START,
-      payload: search,
-    });
+    dispatch(searchStart(search));
     return fetch(requestUrl)
       .then((res) => res.json())
-      .then((urls) => {
-        dispatch({
-          type: SEARCH_SUCCESS,
-          payload: { urlDetails: urls, search },
-        });
+      .then((urlDetails) => {
+        dispatch(searchSuccess(search, urlDetails));
       })
       .catch((error) => {
         console.error(error);
-        dispatch({
-          type: SEARCH_FAILURE,
-          payload: search,
-        });
+        dispatch(searchFailure(search));
       });
   });
 };
