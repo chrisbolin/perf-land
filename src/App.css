@@ -7,12 +7,21 @@ body {
   background-color: #b4f2e0;
   color: #000f08;
   font-family: "Work Sans", sans-serif;
-  font-size: 24px;
   line-height: 1.2;
 }
 
 body {
-  margin: 1rem 2rem;
+  margin: 0.5rem 1.5rem;
+}
+
+@media screen and (min-width: 700px) {
+  html,
+  body {
+    font-size: 24px;
+  }
+  body {
+    margin: 2rem 3rem;
+  }
 }
 
 tspan {
@@ -39,12 +48,14 @@ h2 {
 h1 {
   margin: 0;
 
-  font-size: 60px;
+  font-size: 2.5rem;
   font-weight: 800;
 }
 
 h2 {
-  font-size: 36px;
+  margin: 4rem 0 0;
+
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: 0.187em;
 }
@@ -76,10 +87,6 @@ th {
 
 /* components */
 
-.App {
-  margin: 1em;
-}
-
 .Btn {
   margin: 1rem 1rem 0 0;
   padding: 0.6rem 1.25rem;
@@ -89,10 +96,22 @@ th {
   box-shadow: -0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf;
 }
 
+.Btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px #6ee0bf, -0.5em -0.5em 1.5em 0 #dbfff5,
+    0.5em 0.5em 1.5em 0 #6ee0bf;
+}
+
+.Btn--action {
+  color: #0b5337;
+}
+
 .UrlSelect {
-  width: 100%;
   max-width: 400px;
   margin: 1rem 1rem 0 0;
+  width: 100%;
+
+  line-height: 1;
 }
 
 .SelectedSite {
@@ -144,7 +163,7 @@ th {
 
 .Chart {
   flex: 1 0 300px;
-  margin: 3% 3% 0 0;
+  margin: 2rem 2rem 0 0;
   max-width: 400px;
   padding: 1rem 1.5rem;
 
@@ -154,7 +173,7 @@ th {
 }
 
 .Chart-title {
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 800;
 }
 
@@ -169,12 +188,12 @@ th {
 }
 
 .Title {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
   padding-right: 2rem;
 }
 
 .About {
-  flex: 1 0 45ch;
+  flex: 1 1 45ch;
   font-size: 0.7em;
   max-width: 60ch;
   padding: 1rem 0 0 0;
@@ -183,33 +202,38 @@ th {
 .About h2 {
   font-size: 0.9rem;
 }
+.BtnWrapper {
+  margin-left: -1rem;
 
-.Row {
   align-items: center;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
 }
 
-.BtnWrapper {
-  margin-left: -1rem;
-}
-
 .Collections {
-  align-items: flex-start;
-  display: grid;
-  grid-gap: 1rem;
-  grid-template-columns: 1fr fit-content(350px);
+  margin-top: 1rem;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.Collections-Cell:nth-child(2n) {
-  padding-left: 1rem;
+.Collections-Cell {
+  flex: 1 1 auto;
+}
+
+.Collections-Cell--right {
+  align-self: flex-end;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 /* classes */
 
 .columns {
-  margin-right: -3%;
+  margin-left: -1rem;
+  margin-right: -3rem;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
