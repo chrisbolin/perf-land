@@ -245,94 +245,115 @@ function App() {
       </div>
 
       <h2>websites</h2>
-      {!!urls.length && (
-        <>
-          <div className="Websites">
-            {currentSites.map((site) => (
-              <SelectedSite
-                key={site.url}
-                site={site}
-                onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
-                highlighted={site.url === highlightedUrl}
-                onHighlightClick={() =>
-                  dispatch(actions.changeHighlightSite(site.url))
-                }
-                onHighlightRemoveClick={() =>
-                  dispatch(actions.removeHighlightSite())
-                }
-              />
-            ))}
 
-            <Select
-              className="UrlSelect"
-              options={state.urls.map(({ url }) => ({
-                value: url,
-                label: url,
-              }))}
-              onChange={(option) => {
-                if (!option || "length" in option) return;
-                dispatch(actions.addUrl(option.value));
-              }}
-              onInputChange={(input: string) => {
-                effects.searchForUrls(state, dispatch, input);
-              }}
-              inputValue={state.search}
-              value={null}
-              placeholder="Add website..."
-            />
-            <div className="Websites-Actions">
+      <div className="Collections">
+        <div className="Collections-Cell">
+          <h3>preset collections</h3>
+          <div className="BtnWrapper">
+            {Object.keys(presets).map((presetKey) => (
               <button
                 className="Btn"
-                onClick={() => dispatch(actions.clearAllSelectedUrls())}
+                key={presetKey}
+                onClick={() =>
+                  dispatch(actions.selectPresetUrls(presetKey as PresetName))
+                }
               >
-                new
+                {presetKey}
               </button>
-              <button className="Btn" onClick={() => promptAndSaveCollection()}>
-                {viewingSavedCollection ? "update" : "save"}
-              </button>
-              {viewingSavedCollection && (
+            ))}
+          </div>
+        </div>
+
+        <div className="Collections-Cell">
+          {!!Object.keys(savedCollections).length && (
+            <>
+              <h3>saved collections</h3>
+              <div className="BtnWrapper">
+                {Object.keys(savedCollections).map((collectionName) => (
+                  <button
+                    className="Btn"
+                    key={collectionName}
+                    onClick={() =>
+                      dispatch(actions.selectCollection(collectionName))
+                    }
+                  >
+                    {collectionName}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {!!urls.length && (
+          <>
+            <div className="Collections-Cell">
+              <h3>current collection</h3>
+              <div className="Row BtnWrapper">
+                {currentSites.map((site) => (
+                  <SelectedSite
+                    key={site.url}
+                    site={site}
+                    onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
+                    highlighted={site.url === highlightedUrl}
+                    onHighlightClick={() =>
+                      dispatch(actions.changeHighlightSite(site.url))
+                    }
+                    onHighlightRemoveClick={() =>
+                      dispatch(actions.removeHighlightSite())
+                    }
+                  />
+                ))}
+
+                <Select
+                  className="UrlSelect"
+                  options={state.urls.map(({ url }) => ({
+                    value: url,
+                    label: url,
+                  }))}
+                  onChange={(option) => {
+                    if (!option || "length" in option) return;
+                    dispatch(actions.addUrl(option.value));
+                  }}
+                  onInputChange={(input: string) => {
+                    effects.searchForUrls(state, dispatch, input);
+                  }}
+                  inputValue={state.search}
+                  value={null}
+                  placeholder="Add website..."
+                />
+              </div>
+            </div>
+            <div className="Collections-Cell">
+              <div className="BtnWrapper">
                 <button
                   className="Btn"
-                  onClick={() =>
-                    dispatch(
-                      actions.deleteCollection(state.currentCollection.name)
-                    )
-                  }
+                  onClick={() => dispatch(actions.clearAllSelectedUrls())}
                 >
-                  delete
+                  new
                 </button>
-              )}
+                <button
+                  className="Btn"
+                  onClick={() => promptAndSaveCollection()}
+                >
+                  {viewingSavedCollection ? "update" : "save"}
+                </button>
+                {viewingSavedCollection && (
+                  <button
+                    className="Btn"
+                    onClick={() =>
+                      dispatch(
+                        actions.deleteCollection(state.currentCollection.name)
+                      )
+                    }
+                  >
+                    delete
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </>
-      )}
-      {!!Object.keys(savedCollections).length && (
-        <div>
-          <h3>saved collections</h3>
-          {Object.keys(savedCollections).map((collectionName) => (
-            <button
-              className="Btn"
-              key={collectionName}
-              onClick={() => dispatch(actions.selectCollection(collectionName))}
-            >
-              {collectionName}
-            </button>
-          ))}
-        </div>
-      )}
-      <div>
-        <h3>preset collections</h3>
-        {Object.keys(presets).map((presetKey) => (
-          <button
-            className="Btn"
-            key={presetKey}
-            onClick={() =>
-              dispatch(actions.selectPresetUrls(presetKey as PresetName))
-            }
-          >
-            {presetKey}
-          </button>
-        ))}
+          </>
+        )}
       </div>
 
       {!!currentSites.length && <h2>comparisons</h2>}
