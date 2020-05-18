@@ -17,6 +17,7 @@ import {
   actions,
   presets,
   effects,
+  MIN_SEARCH_STRING_LENGTH,
 } from "./state";
 import "./App.css";
 
@@ -60,6 +61,10 @@ function SelectedSite({
       </button>
     </div>
   );
+}
+
+function LoadingSites() {
+  return <span>loading...</span>;
 }
 
 function SiteDetail({ site }: { site: AugmentedSite }) {
@@ -152,8 +157,7 @@ function Chart({
           barWidth={10}
           style={{
             data: {
-              fill: ({ datum }) =>
-                datum.isHighlighted ? "black" : datum.color,
+              fill: ({ datum }) => datum.color,
             },
           }}
         />
@@ -186,9 +190,11 @@ function App() {
 
   window.state = state;
 
-  const { highlightedUrl, urls, savedCollections } = state;
+  const { highlightedUrl, savedCollections, urls } = state;
   const currentSites = selectors.currentSites(state);
   const viewingSavedCollection = selectors.viewingSavedCollection(state);
+  const searching = selectors.searching(state);
+  const loadingSites = selectors.loadingSites(state);
 
   // effects
 
@@ -379,6 +385,8 @@ function App() {
               />
             ))}
 
+            {loadingSites && <LoadingSites />}
+
             <Select
               className="UrlSelect"
               options={state.urls.map(({ url }) => ({
@@ -396,12 +404,21 @@ function App() {
               value={null}
               placeholder="add website..."
               styles={urlSelectStyles}
+              isLoading={searching}
+              loadingMessage={({ inputValue }) =>
+                `searching for "${inputValue}"...`
+              }
+              noOptionsMessage={({ inputValue }) =>
+                inputValue.length < MIN_SEARCH_STRING_LENGTH
+                  ? "please be more specific"
+                  : `no results for "${inputValue}"`
+              }
             />
           </div>
         </>
       )}
 
-      {!!currentSites.length && <h2>comparisons</h2>}
+      <h2>comparisons</h2>
       <div className="columns">
         <Chart
           sites={currentSites}
@@ -481,7 +498,7 @@ function App() {
         />
       </div>
 
-      {!!currentSites.length && <h2>site details</h2>}
+      <h2>site details</h2>
       <div>
         <table className="SiteDetails">
           <thead>

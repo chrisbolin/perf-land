@@ -14,6 +14,7 @@
     "@types/react-dom": "^16.9.7",
     "@types/react-select": "^3.0.12",
     "@types/victory": "^33.1.4",
+    "colorkind": "^0.4.0",
     "fast-csv": "^4.1.3",
     "lodash": "^4.17.15",
     "papaparse": "^5.2.0",
@@ -32,8 +33,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "staging": "surge build/ perf-land.surge.sh",
-    "prod": "surge build/ perf.land",
+    "staging": "yarn build && surge build/ perf-land.surge.sh",
+    "prod": "yarn build && surge build/ perf.land",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
