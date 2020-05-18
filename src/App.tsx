@@ -63,6 +63,10 @@ function SelectedSite({
   );
 }
 
+function LoadingSites() {
+  return <p>loading...</p>;
+}
+
 function SiteDetail({ site }: { site: AugmentedSite }) {
   return (
     <tr>
@@ -185,7 +189,7 @@ function App() {
 
   window.state = state;
 
-  const { highlightedUrl, urls, savedCollections } = state;
+  const { highlightedUrl, savedCollections } = state;
   const currentSites = selectors.currentSites(state);
   const viewingSavedCollection = selectors.viewingSavedCollection(state);
 
@@ -245,71 +249,70 @@ function App() {
       <div className="Grid">
         <div className="Grid-Sidebar">
           <h2>websites</h2>
-          {!!urls.length && (
-            <div>
-              {currentSites.map((site) => (
-                <SelectedSite
-                  key={site.url}
-                  site={site}
-                  onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
-                  highlighted={site.url === highlightedUrl}
-                  onHighlightClick={() =>
-                    dispatch(actions.changeHighlightSite(site.url))
-                  }
-                  onHighlightRemoveClick={() =>
-                    dispatch(actions.removeHighlightSite())
-                  }
-                />
-              ))}
-              <Select
-                className="UrlSelect"
-                options={state.urls.map(({ url }) => ({
-                  value: url,
-                  label: url,
-                }))}
-                onChange={(option) => {
-                  if (!option || "length" in option) return;
-                  dispatch(actions.addUrl(option.value));
-                }}
-                onInputChange={(input: string) => {
-                  effects.searchForUrls(state, dispatch, input);
-                }}
-                inputValue={state.search}
-                value={null}
-                placeholder="Add website..."
-                isLoading={selectors.searching(state)}
-                loadingMessage={({ inputValue }) =>
-                  `searching for "${inputValue}"...`
+          <div>
+            {currentSites.map((site) => (
+              <SelectedSite
+                key={site.url}
+                site={site}
+                onRemoveClick={() => dispatch(actions.removeUrl(site.url))}
+                highlighted={site.url === highlightedUrl}
+                onHighlightClick={() =>
+                  dispatch(actions.changeHighlightSite(site.url))
                 }
-                noOptionsMessage={({ inputValue }) =>
-                  inputValue.length < MIN_SEARCH_STRING_LENGTH
-                    ? "please be more specific"
-                    : `no results for "${inputValue}"`
+                onHighlightRemoveClick={() =>
+                  dispatch(actions.removeHighlightSite())
                 }
               />
+            ))}
+            {selectors.loadingSites(state) && <LoadingSites />}
+            <Select
+              className="UrlSelect"
+              options={state.urls.map(({ url }) => ({
+                value: url,
+                label: url,
+              }))}
+              onChange={(option) => {
+                if (!option || "length" in option) return;
+                dispatch(actions.addUrl(option.value));
+              }}
+              onInputChange={(input: string) => {
+                effects.searchForUrls(state, dispatch, input);
+              }}
+              inputValue={state.search}
+              value={null}
+              placeholder="Add website..."
+              isLoading={selectors.searching(state)}
+              loadingMessage={({ inputValue }) =>
+                `searching for "${inputValue}"...`
+              }
+              noOptionsMessage={({ inputValue }) =>
+                inputValue.length < MIN_SEARCH_STRING_LENGTH
+                  ? "please be more specific"
+                  : `no results for "${inputValue}"`
+              }
+            />
+            <button
+              className="Btn"
+              onClick={() => dispatch(actions.clearAllSelectedUrls())}
+            >
+              new
+            </button>
+            <button className="Btn" onClick={() => promptAndSaveCollection()}>
+              {viewingSavedCollection ? "update" : "save"}
+            </button>
+            {viewingSavedCollection && (
               <button
                 className="Btn"
-                onClick={() => dispatch(actions.clearAllSelectedUrls())}
+                onClick={() =>
+                  dispatch(
+                    actions.deleteCollection(state.currentCollection.name)
+                  )
+                }
               >
-                new
+                delete
               </button>
-              <button className="Btn" onClick={() => promptAndSaveCollection()}>
-                {viewingSavedCollection ? "update" : "save"}
-              </button>
-              {viewingSavedCollection && (
-                <button
-                  className="Btn"
-                  onClick={() =>
-                    dispatch(
-                      actions.deleteCollection(state.currentCollection.name)
-                    )
-                  }
-                >
-                  delete
-                </button>
-              )}
-            </div>
-          )}
+            )}
+          </div>
           {!!Object.keys(savedCollections).length && (
             <div>
               <h3>saved collections</h3>
@@ -342,7 +345,7 @@ function App() {
           </div>
         </div>
         <div className="Grid-Content">
-          {!!currentSites.length && <h2>comparisons</h2>}
+          <h2>comparisons</h2>
           <div className="columns">
             <Chart
               sites={currentSites}
@@ -424,7 +427,7 @@ function App() {
         </div>
       </div>
 
-      {!!currentSites.length && <h2>site details</h2>}
+      <h2>site details</h2>
       <div>
         <table className="SiteDetails">
           <thead>

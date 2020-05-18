@@ -125,6 +125,7 @@ interface State {
   search: string;
   savedCollections: SavedCollections;
   pendingSearches: string[];
+  pendingSites: string[];
 }
 
 const initialState: State = {
@@ -135,6 +136,7 @@ const initialState: State = {
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
   pendingSearches: [],
+  pendingSites: [],
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -169,9 +171,10 @@ export const initializeState = (): State => {
 
 // action types
 
+const SITES_REQUEST = "SITES_REQUEST";
 const SITES_SUCCESS = "SITES_SUCCESS";
 const SEARCH_CHANGE = "SEARCH_CHANGE";
-const SEARCH_START = "SEARCH_START";
+const SEARCH_REQUEST = "SEARCH_REQUEST";
 const SEARCH_SUCCESS = "SEARCH_SUCCESS";
 const SEARCH_FAILURE = "SEARCH_FAILURE";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
@@ -196,9 +199,10 @@ interface StringAction {
   type:
     | typeof ADD_SELECTED_URL
     | typeof REMOVE_SELECTED_URL
-    | typeof SEARCH_START
+    | typeof SEARCH_REQUEST
     | typeof SEARCH_CHANGE
     | typeof SEARCH_FAILURE
+    | typeof SITES_REQUEST
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
     | typeof DELETE_COLLECTION
@@ -213,7 +217,7 @@ interface SelectPresetAction {
 
 interface SitesSuccessAction {
   type: typeof SITES_SUCCESS;
-  payload: Site[];
+  payload: { sites: Site[]; urlString: string };
 }
 
 interface SearchSuccessAction {
@@ -254,7 +258,7 @@ export const reducer = (state: State, action: Action): State => {
         search: action.payload,
       };
     }
-    case SEARCH_START: {
+    case SEARCH_REQUEST: {
       return {
         ...state,
         pendingSearches: [...state.pendingSearches, action.payload],
@@ -280,9 +284,16 @@ export const reducer = (state: State, action: Action): State => {
         pendingSearches,
       };
     }
+    case SITES_REQUEST: {
+      return {
+        ...state,
+        pendingSites: [...state.pendingSites, action.payload],
+      };
+    }
     case SITES_SUCCESS: {
-      const newSites = keyBy(action.payload, "url");
-      const newUrls = action.payload.map(({ url, rank2017 }) => ({
+      const { sites, urlString } = action.payload;
+      const newSites = keyBy(sites, "url");
+      const newUrls = sites.map(({ url, rank2017 }) => ({
         url,
         rank2017,
       }));
@@ -291,6 +302,7 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         sites: { ...state.sites, ...newSites },
         urls: mergeUrlLists(state.urls, newUrls),
+        pendingSites: removeOneMatch(state.pendingSites, urlString),
       };
     }
     case ADD_SELECTED_URL: {
@@ -383,9 +395,14 @@ const selectPresetUrls = (presetName: PresetName): Action => ({
   payload: presetName,
 });
 
-const sitesSuccess = (sites: Site[]): Action => ({
+const sitesRequest = (urlsString: string): Action => ({
+  type: SITES_REQUEST,
+  payload: urlsString,
+});
+
+const sitesSuccess = (sites: Site[], urlString: string): Action => ({
   type: SITES_SUCCESS,
-  payload: sites,
+  payload: { sites, urlString },
 });
 
 const selectCollection = (collectionName: string): Action => ({
@@ -403,8 +420,8 @@ const deleteCollection = (collectionName: string): Action => ({
   payload: collectionName,
 });
 
-const searchStart = (search: string): Action => ({
-  type: SEARCH_START,
+const searchRequest = (search: string): Action => ({
+  type: SEARCH_REQUEST,
   payload: search,
 });
 
@@ -462,7 +479,14 @@ const viewingSavedCollection = (state: State): boolean =>
 
 const searching = (state: State): boolean => state.pendingSearches.length > 0;
 
-export const selectors = { currentSites, viewingSavedCollection, searching };
+const loadingSites = (state: State): boolean => state.pendingSites.length > 0;
+
+export const selectors = {
+  currentSites,
+  viewingSavedCollection,
+  searching,
+  loadingSites,
+};
 
 // effects
 
@@ -474,11 +498,13 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
 
     if (!urlsWithoutData.length) return;
 
-    const requestUrl = `${API_ROOT}?url=${urlsWithoutData.join(",")}`;
+    const urlsString = urlsWithoutData.join(",");
+    const requestUrl = `${API_ROOT}?url=${urlsString}`;
+    dispatch(sitesRequest(urlsString));
     fetch(requestUrl)
       .then((res) => res.json())
       .then((sites) => {
-        dispatch(actions.sitesSuccess(sites));
+        dispatch(sitesSuccess(sites, urlsString));
       });
   }, [dispatch, state.currentCollection.sites, state.sites]);
 };
@@ -512,7 +538,7 @@ const searchForUrls = (
   const requestUrl = `${API_ROOT}?search2=${search}`;
 
   debounceSearchNetworkRequest(() => {
-    dispatch(searchStart(search));
+    dispatch(searchRequest(search));
     return fetch(requestUrl)
       .then((res) => res.json())
       .then((urlDetails) => {
