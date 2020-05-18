@@ -3073,10 +3073,10 @@ colorette@1.1.0:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.1.0.tgz#1f943e5a357fac10b4e0f5aaef3b14cdc1af6ec7"
   integrity sha512-6S062WDQUXi6hOfkO/sBPVwE5ASXY4G2+b4atvhJfSsuUUhIaUKlkjLe9692Ipyt5/a+IPF5aVTu3V5gvXq5cg==
 
-colorkind@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/colorkind/-/colorkind-0.3.2.tgz#76bfde1fa0b74e67ae4b5517cd9c08ad9dbf6737"
-  integrity sha512-Oi8f/4mEFqI4VPO1XWRJadNLuPf5+lRMGtCdCt9mex0H6HeuoZaY/MDjewhtBiljNgol97Hvufa4WP3gjlbVDw==
+colorkind@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/colorkind/-/colorkind-0.4.0.tgz#7534f6e3cb391eed5cbfbbd4c4ac342041002ded"
+  integrity sha512-n9unSF6JpLEa8eJrOkcz21NwRU3scZca8446tJ5iQGobcakXB/5g8RW0O1tUHg+I3AzuCmsNowDzFpDiidfqqw==
 
 combined-stream@^1.0.6, combined-stream@~1.0.6:
   version "1.0.8"
