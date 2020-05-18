@@ -173,6 +173,7 @@ const RECEIVE_SITES = "RECEIVE_SITES";
 const SEARCH_CHANGE = "SEARCH_CHANGE";
 const SEARCH_START = "SEARCH_START";
 const SEARCH_SUCCESS = "SEARCH_SUCCESS";
+const SEARCH_FAILURE = "SEARCH_FAILURE";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
 const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
 const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
@@ -197,6 +198,7 @@ interface StringAction {
     | typeof REMOVE_SELECTED_URL
     | typeof SEARCH_START
     | typeof SEARCH_CHANGE
+    | typeof SEARCH_FAILURE
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
     | typeof DELETE_COLLECTION
@@ -235,6 +237,15 @@ const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
     return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
   });
 
+const removeOneMatch = (list: string[], item: string) => {
+  const listCopy = [...list];
+  const removeIndex = listCopy.indexOf(item);
+  if (removeIndex > -1) {
+    listCopy.splice(removeIndex, 1);
+  }
+  return listCopy;
+};
+
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case SEARCH_CHANGE: {
@@ -251,15 +262,21 @@ export const reducer = (state: State, action: Action): State => {
     }
     case SEARCH_SUCCESS: {
       const { urlDetails, search } = action.payload;
-      let pendingSearches = [...state.pendingSearches];
-      const removeIndex = state.pendingSearches.indexOf(search);
-      if (removeIndex > -1) {
-        pendingSearches.splice(removeIndex, 1);
-      }
+      const pendingSearches = removeOneMatch(state.pendingSearches, search);
 
       return {
         ...state,
         urls: mergeUrlLists(state.urls, urlDetails),
+        pendingSearches,
+      };
+    }
+    case SEARCH_FAILURE: {
+      const pendingSearches = removeOneMatch(
+        state.pendingSearches,
+        action.payload
+      );
+      return {
+        ...state,
         pendingSearches,
       };
     }
@@ -489,6 +506,13 @@ const searchForUrls = (
         dispatch({
           type: SEARCH_SUCCESS,
           payload: { urlDetails: urls, search },
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        dispatch({
+          type: SEARCH_FAILURE,
+          payload: search,
         });
       });
   });
