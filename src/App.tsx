@@ -17,6 +17,7 @@ import {
   actions,
   presets,
   effects,
+  MIN_SEARCH_STRING_LENGTH,
 } from "./state";
 import "./App.css";
 
@@ -276,6 +277,15 @@ function App() {
                 inputValue={state.search}
                 value={null}
                 placeholder="Add website..."
+                isLoading={selectors.searching(state)}
+                loadingMessage={({ inputValue }) =>
+                  `searching for "${inputValue}"...`
+                }
+                noOptionsMessage={({ inputValue }) =>
+                  inputValue.length < MIN_SEARCH_STRING_LENGTH
+                    ? "please be more specific"
+                    : `no results for "${inputValue}"`
+                }
               />
               <button
                 className="Btn"

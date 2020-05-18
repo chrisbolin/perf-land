@@ -13,7 +13,7 @@ import colors from "colorkind/dist/12";
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
-const MIN_SEARCH_STRING_LENGTH = 5;
+export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
 
 export const presets = {
@@ -124,6 +124,7 @@ interface State {
   currentCollection: Collection;
   search: string;
   savedCollections: SavedCollections;
+  pendingSearches: string[];
 }
 
 const initialState: State = {
@@ -133,6 +134,7 @@ const initialState: State = {
   search: "",
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
+  pendingSearches: [],
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -168,13 +170,14 @@ export const initializeState = (): State => {
 // action types
 
 const RECEIVE_SITES = "RECEIVE_SITES";
-const RECEIVE_URLS = "RECEIVE_URLS";
+const SEARCH_CHANGE = "SEARCH_CHANGE";
+const SEARCH_START = "SEARCH_START";
+const SEARCH_SUCCESS = "SEARCH_SUCCESS";
 const ADD_SELECTED_URL = "ADD_SELECTED_URL";
 const REMOVE_SELECTED_URL = "REMOVE_SELECTED_URL";
 const CLEAR_ALL_SELECTED_URLS = "CLEAR_ALL_SELECTED_URLS";
 const SELECT_PRESET = "SELECT_PRESET";
 const CHANGE_HIGHLIGHTED_URL = "CHANGE_HIGHLIGHTED_URL";
-const CHANGE_SEARCH = "CHANGE_SEARCH";
 const SAVE_COLLECTION = "SAVE_COLLECTION";
 const SELECT_COLLECTION = "SELECT_COLLECTION";
 const DELETE_COLLECTION = "DELETE_COLLECTION";
@@ -192,7 +195,8 @@ interface StringAction {
   type:
     | typeof ADD_SELECTED_URL
     | typeof REMOVE_SELECTED_URL
-    | typeof CHANGE_SEARCH
+    | typeof SEARCH_START
+    | typeof SEARCH_CHANGE
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
     | typeof DELETE_COLLECTION
@@ -210,13 +214,13 @@ interface ReceiveSitesAction {
   payload: Site[];
 }
 
-interface ReceiveUrlsAction {
-  type: typeof RECEIVE_URLS;
-  payload: UrlDetails[];
+interface SearchSuccessAction {
+  type: typeof SEARCH_SUCCESS;
+  payload: { urlDetails: UrlDetails[]; search: string };
 }
 
 type Action =
-  | ReceiveUrlsAction
+  | SearchSuccessAction
   | ReceiveSitesAction
   | SelectPresetAction
   | StringAction
@@ -233,10 +237,30 @@ const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
 
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case RECEIVE_URLS: {
+    case SEARCH_CHANGE: {
       return {
         ...state,
-        urls: mergeUrlLists(state.urls, action.payload),
+        search: action.payload,
+      };
+    }
+    case SEARCH_START: {
+      return {
+        ...state,
+        pendingSearches: [...state.pendingSearches, action.payload],
+      };
+    }
+    case SEARCH_SUCCESS: {
+      const { urlDetails, search } = action.payload;
+      let pendingSearches = [...state.pendingSearches];
+      const removeIndex = state.pendingSearches.indexOf(search);
+      if (removeIndex > -1) {
+        pendingSearches.splice(removeIndex, 1);
+      }
+
+      return {
+        ...state,
+        urls: mergeUrlLists(state.urls, urlDetails),
+        pendingSearches,
       };
     }
     case RECEIVE_SITES: {
@@ -284,9 +308,6 @@ export const reducer = (state: State, action: Action): State => {
     }
     case CHANGE_HIGHLIGHTED_URL: {
       return { ...state, highlightedUrl: action.payload };
-    }
-    case CHANGE_SEARCH: {
-      return { ...state, search: action.payload };
     }
     case SAVE_COLLECTION: {
       const collectionName = action.payload;
@@ -407,7 +428,9 @@ const currentSites = (state: State): AugmentedSite[] =>
 const viewingSavedCollection = (state: State): boolean =>
   !!state.savedCollections[state.currentCollection.name];
 
-export const selectors = { currentSites, viewingSavedCollection };
+const searching = (state: State): boolean => state.pendingSearches.length > 0;
+
+export const selectors = { currentSites, viewingSavedCollection, searching };
 
 // effects
 
@@ -445,7 +468,7 @@ const searchForUrls = (
   search: string
 ) => {
   dispatch({
-    type: CHANGE_SEARCH as typeof CHANGE_SEARCH,
+    type: SEARCH_CHANGE,
     payload: search,
   });
 
@@ -455,16 +478,20 @@ const searchForUrls = (
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
   const requestUrl = `${API_ROOT}?search2=${search}`;
-  debounceSearchNetworkRequest(() =>
-    fetch(requestUrl)
+  debounceSearchNetworkRequest(() => {
+    dispatch({
+      type: SEARCH_START,
+      payload: search,
+    });
+    return fetch(requestUrl)
       .then((res) => res.json())
       .then((urls) => {
         dispatch({
-          type: RECEIVE_URLS,
-          payload: urls,
+          type: SEARCH_SUCCESS,
+          payload: { urlDetails: urls, search },
         });
-      })
-  );
+      });
+  });
 };
 
 export const effects = { useSelectedSites, usePersistState, searchForUrls };
