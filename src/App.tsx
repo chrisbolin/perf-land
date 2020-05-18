@@ -44,13 +44,13 @@ function SelectedSite({
   onHighlightRemoveClick: EventCallbackFunction;
 }) {
   return (
-    <div className={`SelectedSite ${highlighted && `highlighted`}`}>
+    <div className={`SelectedSite ${highlighted ? `highlighted` : ``}`}>
       <button
-        className={`SelectedSite-btn ${highlighted && "highlighted"}`}
+        className={`SelectedSite-btn ${highlighted ? `highlighted` : ``}`}
         onClick={highlighted ? onHighlightRemoveClick : onHighlightClick}
       >
         {site.name}
-        {highlighted ? " ⭐" : null}
+        <span className="icon">{highlighted ? " ⭐" : null}</span>
       </button>
       <button
         className="SelectedSite-removeBtn"
@@ -64,7 +64,7 @@ function SelectedSite({
 }
 
 function LoadingSites() {
-  return <p>loading...</p>;
+  return <span>loading...</span>;
 }
 
 function SiteDetail({ site }: { site: AugmentedSite }) {
@@ -129,6 +129,7 @@ function Chart({
     <div className="Chart">
       <span className="Chart-title">{name}</span>
       <VictoryChart
+        width={360}
         height={data.length * 60}
         domainPadding={20}
         padding={{ top: 20, right: 20, bottom: 50, left: 1 }}
@@ -184,14 +185,50 @@ function Chart({
   );
 }
 
+const urlSelectStyles = {
+  control: (provided: Object) => ({
+    ...provided,
+    backgroundColor: "#ffffff",
+    border: "none",
+    borderRadius: "2rem",
+    boxShadow: "-0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf",
+    margin: "0",
+    minHeight: "0",
+  }),
+  valueContainer: (provided: Object) => ({
+    ...provided,
+    padding: "0.5rem 1.25rem",
+  }),
+  indicatorsContainer: (provided: Object) => ({
+    ...provided,
+    paddingRight: "0.5rem",
+  }),
+  indicatorSeparator: (provided: Object) => ({
+    ...provided,
+    margin: "0 0.25rem 0 0",
+  }),
+  menu: (provided: Object, state: Object) => ({
+    ...provided,
+    borderRadius: "1rem",
+    boxShadow: "0.5em 0.5em 1.5em 0 #6ee0bf",
+    padding: "0.6rem 0",
+  }),
+  option: (provided: Object, state: Object) => ({
+    ...provided,
+    padding: "0.25em 1.25rem",
+  }),
+};
+
 function App() {
   const [state, dispatch] = useReducer(reducer, undefined, initializeState);
 
   window.state = state;
 
-  const { highlightedUrl, savedCollections } = state;
+  const { highlightedUrl, savedCollections, urls } = state;
   const currentSites = selectors.currentSites(state);
   const viewingSavedCollection = selectors.viewingSavedCollection(state);
+  const searching = selectors.searching(state);
+  const loadingSites = selectors.loadingSites(state);
 
   // effects
 
@@ -246,10 +283,93 @@ function App() {
           </p>
         </div>
       </div>
-      <div className="Grid">
-        <div className="Grid-Sidebar">
-          <h2>websites</h2>
-          <div>
+
+      <h2>websites</h2>
+
+      <h3>preset collections</h3>
+      <div className="BtnWrapper">
+        {Object.keys(presets).map((presetKey) => (
+          <button
+            className="Btn"
+            key={presetKey}
+            onClick={() =>
+              dispatch(actions.selectPresetUrls(presetKey as PresetName))
+            }
+          >
+            {presetKey}
+          </button>
+        ))}
+      </div>
+
+      <div className="Collections">
+        {!!Object.keys(savedCollections).length && (
+          <div className="Collections-Cell">
+            <h3>saved collections</h3>
+            <div className="BtnWrapper">
+              {Object.keys(savedCollections).map((collectionName) => (
+                <button
+                  className="Btn"
+                  key={collectionName}
+                  onClick={() =>
+                    dispatch(actions.selectCollection(collectionName))
+                  }
+                >
+                  {collectionName}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="Collections-Cell Collections-Cell--right">
+          <div className="BtnWrapper">
+            {viewingSavedCollection ? (
+              <button
+                className="Btn Btn--action"
+                onClick={() => promptAndSaveCollection()}
+              >
+                update preset
+              </button>
+            ) : null}
+            {viewingSavedCollection && (
+              <button
+                className="Btn Btn--action"
+                onClick={() =>
+                  dispatch(
+                    actions.deleteCollection(state.currentCollection.name)
+                  )
+                }
+              >
+                delete preset
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {!!urls.length && (
+        <>
+          <div className="Collections">
+            <h3>active</h3>
+            <div className="Collections-Cell Collections-Cell--right">
+              <div className="BtnWrapper">
+                <button
+                  className="Btn Btn--action"
+                  onClick={() => dispatch(actions.clearAllSelectedUrls())}
+                >
+                  clear all
+                </button>
+                {viewingSavedCollection ? null : (
+                  <button
+                    className="Btn Btn--action"
+                    onClick={() => promptAndSaveCollection()}
+                  >
+                    save preset
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="BtnWrapper">
             {currentSites.map((site) => (
               <SelectedSite
                 key={site.url}
@@ -264,7 +384,9 @@ function App() {
                 }
               />
             ))}
-            {selectors.loadingSites(state) && <LoadingSites />}
+
+            {loadingSites && <LoadingSites />}
+
             <Select
               className="UrlSelect"
               options={state.urls.map(({ url }) => ({
@@ -280,8 +402,9 @@ function App() {
               }}
               inputValue={state.search}
               value={null}
-              placeholder="Add website..."
-              isLoading={selectors.searching(state)}
+              placeholder="add website..."
+              styles={urlSelectStyles}
+              isLoading={searching}
               loadingMessage={({ inputValue }) =>
                 `searching for "${inputValue}"...`
               }
@@ -291,140 +414,88 @@ function App() {
                   : `no results for "${inputValue}"`
               }
             />
-            <button
-              className="Btn"
-              onClick={() => dispatch(actions.clearAllSelectedUrls())}
-            >
-              new
-            </button>
-            <button className="Btn" onClick={() => promptAndSaveCollection()}>
-              {viewingSavedCollection ? "update" : "save"}
-            </button>
-            {viewingSavedCollection && (
-              <button
-                className="Btn"
-                onClick={() =>
-                  dispatch(
-                    actions.deleteCollection(state.currentCollection.name)
-                  )
-                }
-              >
-                delete
-              </button>
-            )}
           </div>
-          {!!Object.keys(savedCollections).length && (
-            <div>
-              <h3>saved collections</h3>
-              {Object.keys(savedCollections).map((collectionName) => (
-                <button
-                  className="Btn"
-                  key={collectionName}
-                  onClick={() =>
-                    dispatch(actions.selectCollection(collectionName))
-                  }
-                >
-                  {collectionName}
-                </button>
-              ))}
-            </div>
-          )}
-          <div>
-            <h3>preset collections</h3>
-            {Object.keys(presets).map((presetKey) => (
-              <button
-                className="Btn"
-                key={presetKey}
-                onClick={() =>
-                  dispatch(actions.selectPresetUrls(presetKey as PresetName))
-                }
-              >
-                {presetKey}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="Grid-Content">
-          <h2>comparisons</h2>
-          <div className="columns">
-            <Chart
-              sites={currentSites}
-              name="Time to first byte (ms)"
-              field="TTFB"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="First contentful paint (ms)"
-              field="firstContentfulPaint"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="First meaningful paint (ms)"
-              field="firstMeaningfulPaint"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="First cpu idle (ms)"
-              field="firstCPUIdle"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Time to interactive (ms)"
-              field="timeToInteractive"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Max potential first input delay (ms)"
-              field="maxPotentialFirstInputDelay"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Speed index"
-              field="speedIndex"
-              highlightedUrl={highlightedUrl}
-            />
-            <Chart
-              sites={currentSites}
-              name="Lighthouse performance score"
-              field="performanceScore"
-              highlightedUrl={highlightedUrl}
-              reverse
-            />
-            <Chart
-              sites={currentSites}
-              name="JavaScript payload (kB)"
-              field="bytesJS"
-              highlightedUrl={highlightedUrl}
-              yTransform={(y) => Math.round(y / 1000)}
-            />
-            <Chart
-              sites={currentSites}
-              name="Image payload (kB)"
-              field="bytesImg"
-              highlightedUrl={highlightedUrl}
-              yTransform={(y) => Math.round(y / 1000)}
-            />
-            <Chart
-              sites={currentSites}
-              name="Total request payload (kB)"
-              field="bytesTotal"
-              highlightedUrl={highlightedUrl}
-              yTransform={(y) => Math.round(y / 1000)}
-            />
-            <Chart
-              sites={currentSites}
-              name="Number of requests"
-              field="reqTotal"
-              highlightedUrl={highlightedUrl}
-            />
-          </div>
-        </div>
+        </>
+      )}
+
+      <h2>comparisons</h2>
+      <div className="columns">
+        <Chart
+          sites={currentSites}
+          name="Time to first byte (ms)"
+          field="TTFB"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="First contentful paint (ms)"
+          field="firstContentfulPaint"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="First meaningful paint (ms)"
+          field="firstMeaningfulPaint"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="First cpu idle (ms)"
+          field="firstCPUIdle"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Time to interactive (ms)"
+          field="timeToInteractive"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Max potential first input delay (ms)"
+          field="maxPotentialFirstInputDelay"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Speed index"
+          field="speedIndex"
+          highlightedUrl={highlightedUrl}
+        />
+        <Chart
+          sites={currentSites}
+          name="Lighthouse performance score"
+          field="performanceScore"
+          highlightedUrl={highlightedUrl}
+          reverse
+        />
+        <Chart
+          sites={currentSites}
+          name="JavaScript payload (kB)"
+          field="bytesJS"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          sites={currentSites}
+          name="Image payload (kB)"
+          field="bytesImg"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          sites={currentSites}
+          name="Total request payload (kB)"
+          field="bytesTotal"
+          highlightedUrl={highlightedUrl}
+          yTransform={(y) => Math.round(y / 1000)}
+        />
+        <Chart
+          sites={currentSites}
+          name="Number of requests"
+          field="reqTotal"
+          highlightedUrl={highlightedUrl}
+        />
       </div>
 
       <h2>site details</h2>

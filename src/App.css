@@ -4,14 +4,24 @@
 
 html,
 body {
-  background-color: #bff3e6;
+  background-color: #b4f2e0;
   color: #000f08;
   font-family: "Work Sans", sans-serif;
-  font-size: 24px;
+  line-height: 1.2;
 }
 
 body {
-  margin: 1rem;
+  margin: 0.5rem 1.5rem;
+}
+
+@media screen and (min-width: 700px) {
+  html,
+  body {
+    font-size: 24px;
+  }
+  body {
+    margin: 2rem 3rem;
+  }
 }
 
 tspan {
@@ -23,10 +33,10 @@ tspan {
   background: #f9f98a;
 }
 
-h1,
 h2,
+h3,
 p {
-  margin: 1rem 0 0 0;
+  margin: 1em 0 0 0;
 }
 
 h1,
@@ -36,14 +46,25 @@ h2 {
 }
 
 h1 {
-  font-size: 60px;
+  margin: 0;
+
+  font-size: 2.5rem;
   font-weight: 800;
 }
 
 h2 {
-  font-size: 36px;
+  margin: 4rem 0 0;
+
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: 0.187em;
+}
+
+h3 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
 }
 
 button {
@@ -55,7 +76,8 @@ a:visited {
   color: inherit;
 }
 
-td, th {
+td,
+th {
   padding: 0.25em 2em 0.25em 0;
 }
 
@@ -65,21 +87,31 @@ th {
 
 /* components */
 
-.App {
-  margin: 1em;
+.Btn {
+  margin: 1rem 1rem 0 0;
+  padding: 0.6rem 1.25rem;
+
+  border-radius: 2rem;
+  background-color: #b4f2e0;
+  box-shadow: -0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf;
+}
+
+.Btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px #6ee0bf, -0.5em -0.5em 1.5em 0 #dbfff5,
+    0.5em 0.5em 1.5em 0 #6ee0bf;
+}
+
+.Btn--action {
+  color: #0b5337;
 }
 
 .UrlSelect {
   max-width: 400px;
-  margin: 2rem 0 0 0;
-}
+  margin: 1rem 1rem 0 0;
+  width: 100%;
 
-.Btn {
-  margin: 1rem 0 0 0;
-  padding: 0.25rem 1.25rem;
-
-  border-radius: 2rem;
-  background-color: #dbfff5;
+  line-height: 1;
 }
 
 .SelectedSite {
@@ -88,24 +120,25 @@ th {
   flex-wrap: nowrap;
   justify-content: space-between;
 
-  margin: 2rem 0 0 0;
+  margin: 1rem 1rem 0 0;
 
   border-radius: 2rem;
-  font-size: 24px;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .SelectedSite:not(.highlighted) {
-  background-color: #bff3e6;
+  background-color: #b4f2e0;
   box-shadow: -0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf;
 }
 
 .SelectedSite.highlighted {
-  background-color: #b4f2e0;
+  background-color: #abedda;
   box-shadow: inset -6px -6px 16px 0 #dbfff5, inset 6px 6px 16px 0 #6ee0bf;
 }
 
 .SelectedSite-btn {
-  padding: 1rem 0 1rem 1.5rem;
+  padding: 0.6rem 0 0.6rem 1.25rem;
   text-align: left;
   width: 100%;
 
@@ -114,7 +147,7 @@ th {
 }
 
 .SelectedSite-removeBtn {
-  padding: 1rem 1.5rem;
+  padding: 0.6rem 1.25rem;
 }
 
 .SelectedSite-btn:focus,
@@ -125,11 +158,12 @@ th {
 }
 
 .SiteDetails {
-  margin-bottom: 2em;
+  margin: 1rem 0 0 0;
 }
 
 .Chart {
-  margin: 0 0 3rem 0;
+  flex: 1 0 300px;
+  margin: 2rem 2rem 0 0;
   max-width: 400px;
   padding: 1rem 1.5rem;
 
@@ -139,51 +173,76 @@ th {
 }
 
 .Chart-title {
-  font-size: 0.7rem;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 /* Layout */
 .Hero {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: space-between;
+
+  padding: 2rem 0 0 0;
+}
+
+.Title {
+  flex: 1 1 auto;
+  padding-right: 2rem;
 }
 
 .About {
-  margin-top: 52px;
+  flex: 1 1 45ch;
   font-size: 0.7em;
-  max-width: 45ch;
+  max-width: 60ch;
+  padding: 1rem 0 0 0;
 }
 
 .About h2 {
   font-size: 0.9rem;
 }
+.BtnWrapper {
+  margin-left: -1rem;
 
-.About p {
-  max-width: 45ch;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.Grid {
-  display: grid;
-  grid-gap: 3rem;
-  grid-template-columns: 400px auto;
-  grid-template-areas: "sidebar content ";
+.Collections {
+  margin-top: 1rem;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 
-.Grid-Sidebar {
-  grid-area: sidebar;
+.Collections-Cell {
+  flex: 1 1 auto;
 }
 
-.Grid-Content {
-  grid-area: content;
+.Collections-Cell--right {
+  align-self: flex-end;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 /* classes */
 
 .columns {
-  padding: 1rem 0 0 0;
-  column-width: 400px;
+  margin-left: -1rem;
+  margin-right: -3rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.icon {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .text {
