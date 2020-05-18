@@ -185,6 +185,40 @@ function Chart({
   );
 }
 
+const urlSelectStyles = {
+  control: (provided: Object) => ({
+    ...provided,
+    backgroundColor: "#ffffff",
+    border: "none",
+    borderRadius: "2rem",
+    boxShadow: "-0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf",
+    margin: "0",
+    minHeight: "0",
+  }),
+  valueContainer: (provided: Object) => ({
+    ...provided,
+    padding: "0.5rem 1.25rem",
+  }),
+  indicatorsContainer: (provided: Object) => ({
+    ...provided,
+    paddingRight: "0.5rem",
+  }),
+  indicatorSeparator: (provided: Object) => ({
+    ...provided,
+    margin: "0 0.25rem 0 0",
+  }),
+  menu: (provided: Object, state: Object) => ({
+    ...provided,
+    borderRadius: "1rem",
+    boxShadow: "0.5em 0.5em 1.5em 0 #6ee0bf",
+    padding: "0.6rem 0",
+  }),
+  option: (provided: Object, state: Object) => ({
+    ...provided,
+    padding: "0.25em 1.25rem",
+  }),
+};
+
 function App() {
   const [state, dispatch] = useReducer(reducer, undefined, initializeState);
 
@@ -210,40 +244,6 @@ function App() {
     if (name) {
       dispatch(actions.saveCollection(name));
     }
-  };
-
-  const urlSelectStyles = {
-    control: (provided: object) => ({
-      ...provided,
-      backgroundColor: "#ffffff",
-      border: "none",
-      borderRadius: "2rem",
-      boxShadow: "-0.5em -0.5em 1.5em 0 #dbfff5, 0.5em 0.5em 1.5em 0 #6ee0bf",
-      margin: "0",
-      minHeight: "0",
-    }),
-    valueContainer: (provided: object) => ({
-      ...provided,
-      padding: "0.5rem 1.25rem",
-    }),
-    indicatorsContainer: (provided: object) => ({
-      ...provided,
-      paddingRight: "0.5rem",
-    }),
-    indicatorSeparator: (provided: object) => ({
-      ...provided,
-      margin: "0 0.25rem 0 0",
-    }),
-    menu: (provided: object, state: object) => ({
-      ...provided,
-      borderRadius: "1rem",
-      boxShadow: "0.5em 0.5em 1.5em 0 #6ee0bf",
-      padding: "0.6rem 0",
-    }),
-    option: (provided: object, state: object) => ({
-      ...provided,
-      padding: "0.25em 1.25rem",
-    }),
   };
 
   return (
