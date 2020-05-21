@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, memo } from "react";
 import Select from "react-select";
 import {
   VictoryBar,
@@ -82,8 +82,7 @@ function SiteDetail({ site }: { site: AugmentedSite }) {
     </tr>
   );
 }
-
-function Chart({
+function ChartNoMemo({
   sites,
   field,
   name,
@@ -184,6 +183,13 @@ function Chart({
     </div>
   );
 }
+
+const Chart = memo(
+  ChartNoMemo,
+  (prevProps, nextProps) =>
+    prevProps.highlightedUrl === nextProps.highlightedUrl &&
+    prevProps.sites.length === nextProps.sites.length
+);
 
 const urlSelectStyles = {
   control: (provided: Object) => ({
