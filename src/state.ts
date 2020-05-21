@@ -118,7 +118,7 @@ interface State {
   search: string;
   savedCollections: SavedCollections;
   pendingSearches: string[];
-  pendingUrls: string[];
+  pendingUrls: Set<string>;
 }
 
 const initialState: State = {
@@ -129,7 +129,7 @@ const initialState: State = {
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
   pendingSearches: [],
-  pendingUrls: [],
+  pendingUrls: new Set(),
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -278,20 +278,24 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case SITE_REQUEST: {
+      const pendingUrls = new Set(state.pendingUrls);
+      pendingUrls.add(action.payload);
       return {
         ...state,
-        pendingUrls: [...state.pendingUrls, action.payload],
+        pendingUrls,
       };
     }
     case SITE_SUCCESS: {
       const { siteRuns, url } = action.payload;
       const { rank2017 } = siteRuns[0]; // all runs sites have at least 1 run
+      const pendingUrls = new Set(state.pendingUrls);
+      pendingUrls.delete(url);
 
       return {
         ...state,
         sites: { ...state.sites, [url]: siteRuns },
         urls: mergeUrlLists(state.urls, [{ url, rank2017 }]),
-        pendingUrls: removeOneMatch(state.pendingUrls, url),
+        pendingUrls,
       };
     }
     case ADD_SELECTED_URL: {
@@ -468,7 +472,7 @@ const viewingSavedCollection = (state: State): boolean =>
 
 const searching = (state: State): boolean => state.pendingSearches.length > 0;
 
-const loadingSites = (state: State): boolean => state.pendingUrls.length > 0;
+const loadingSites = (state: State): boolean => state.pendingUrls.size > 0;
 
 export const selectors = {
   currentSites,
@@ -484,7 +488,7 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
     const urlsWithoutData = state.currentCollection.sites
       .map(({ url }) => url)
       .filter((url) => !state.sites[url])
-      .filter((url) => !state.pendingUrls.find((pUrl) => pUrl === url));
+      .filter((url) => !state.pendingUrls.has(url));
 
     if (!urlsWithoutData.length) return;
 
