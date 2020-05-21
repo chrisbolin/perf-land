@@ -117,7 +117,7 @@ interface State {
   currentCollection: Collection;
   search: string;
   savedCollections: SavedCollections;
-  pendingSearches: string[];
+  pendingSearches: Set<string>;
   pendingUrls: Set<string>;
 }
 
@@ -128,7 +128,7 @@ const initialState: State = {
   search: "",
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
-  pendingSearches: [],
+  pendingSearches: new Set(),
   pendingUrls: new Set(),
 };
 
@@ -234,15 +234,6 @@ const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
     return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
   });
 
-const removeOneMatch = (list: string[], item: string) => {
-  const listCopy = [...list];
-  const removeIndex = listCopy.indexOf(item);
-  if (removeIndex > -1) {
-    listCopy.splice(removeIndex, 1);
-  }
-  return listCopy;
-};
-
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case SEARCH_CHANGE: {
@@ -252,14 +243,17 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case SEARCH_REQUEST: {
+      const pendingSearches = new Set(state.pendingSearches);
+      pendingSearches.add(action.payload);
       return {
         ...state,
-        pendingSearches: [...state.pendingSearches, action.payload],
+        pendingSearches,
       };
     }
     case SEARCH_SUCCESS: {
       const { urlDetails, search } = action.payload;
-      const pendingSearches = removeOneMatch(state.pendingSearches, search);
+      const pendingSearches = new Set(state.pendingSearches);
+      pendingSearches.delete(search);
 
       return {
         ...state,
@@ -268,10 +262,8 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case SEARCH_FAILURE: {
-      const pendingSearches = removeOneMatch(
-        state.pendingSearches,
-        action.payload
-      );
+      const pendingSearches = new Set(state.pendingSearches);
+      pendingSearches.delete(action.payload);
       return {
         ...state,
         pendingSearches,
@@ -470,7 +462,7 @@ const currentSites = (state: State): AugmentedSite[] =>
 const viewingSavedCollection = (state: State): boolean =>
   !!state.savedCollections[state.currentCollection.name];
 
-const searching = (state: State): boolean => state.pendingSearches.length > 0;
+const searching = (state: State): boolean => state.pendingSearches.size > 0;
 
 const loadingSites = (state: State): boolean => state.pendingUrls.size > 0;
 
@@ -527,6 +519,7 @@ const searchForUrls = (
   });
 
   if (search.length < MIN_SEARCH_STRING_LENGTH) return;
+  if (state.pendingSearches.has(search)) return; // don't search for the same string again
 
   const found = state.urls.filter(({ url }) => url.includes(search));
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
