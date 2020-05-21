@@ -483,7 +483,8 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   useEffect(() => {
     const urlsWithoutData = state.currentCollection.sites
       .map(({ url }) => url)
-      .filter((url) => !state.sites[url]);
+      .filter((url) => !state.sites[url])
+      .filter((url) => !state.pendingUrls.find((pUrl) => pUrl === url));
 
     if (!urlsWithoutData.length) return;
 
@@ -497,7 +498,7 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
           dispatch(siteSuccess(siteRuns, url));
         });
     });
-  }, [dispatch, state.currentCollection.sites, state.sites]);
+  }, [dispatch, state.currentCollection.sites, state.sites, state.pendingUrls]);
 };
 
 const usePersistState = (state: State) => {
