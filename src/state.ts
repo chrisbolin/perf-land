@@ -1,12 +1,4 @@
-import {
-  cloneDeep,
-  debounce,
-  keyBy,
-  orderBy,
-  pick,
-  omit,
-  unionBy,
-} from "lodash";
+import { cloneDeep, debounce, orderBy, pick, omit, unionBy } from "lodash";
 import { useEffect } from "react";
 import colors from "colorkind/dist/12";
 
@@ -126,7 +118,7 @@ interface State {
   search: string;
   savedCollections: SavedCollections;
   pendingSearches: string[];
-  pendingSites: string[];
+  pendingUrls: string[];
 }
 
 const initialState: State = {
@@ -137,7 +129,7 @@ const initialState: State = {
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
   pendingSearches: [],
-  pendingSites: [],
+  pendingUrls: [],
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -172,8 +164,8 @@ export const initializeState = (): State => {
 
 // action types
 
-const SITES_REQUEST = "SITES_REQUEST";
-const SITES_SUCCESS = "SITES_SUCCESS";
+const SITE_REQUEST = "SITE_REQUEST";
+const SITE_SUCCESS = "SITE_SUCCESS";
 const SEARCH_CHANGE = "SEARCH_CHANGE";
 const SEARCH_REQUEST = "SEARCH_REQUEST";
 const SEARCH_SUCCESS = "SEARCH_SUCCESS";
@@ -203,7 +195,7 @@ interface StringAction {
     | typeof SEARCH_REQUEST
     | typeof SEARCH_CHANGE
     | typeof SEARCH_FAILURE
-    | typeof SITES_REQUEST
+    | typeof SITE_REQUEST
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
     | typeof DELETE_COLLECTION
@@ -217,8 +209,8 @@ interface SelectPresetAction {
 }
 
 interface SitesSuccessAction {
-  type: typeof SITES_SUCCESS;
-  payload: { sites: SiteRun[][]; urlString: string };
+  type: typeof SITE_SUCCESS;
+  payload: { siteRuns: SiteRun[]; url: string };
 }
 
 interface SearchSuccessAction {
@@ -285,25 +277,21 @@ export const reducer = (state: State, action: Action): State => {
         pendingSearches,
       };
     }
-    case SITES_REQUEST: {
+    case SITE_REQUEST: {
       return {
         ...state,
-        pendingSites: [...state.pendingSites, action.payload],
+        pendingUrls: [...state.pendingUrls, action.payload],
       };
     }
-    case SITES_SUCCESS: {
-      const { sites, urlString } = action.payload;
-      const newSites = keyBy(sites, "0.url");
-      const newUrls = sites.map((siteRuns) => {
-        const { url, rank2017 } = siteRuns[0]; // all runs sites have at least 1 run
-        return { url, rank2017 };
-      });
+    case SITE_SUCCESS: {
+      const { siteRuns, url } = action.payload;
+      const { rank2017 } = siteRuns[0]; // all runs sites have at least 1 run
 
       return {
         ...state,
-        sites: { ...state.sites, ...newSites },
-        urls: mergeUrlLists(state.urls, newUrls),
-        pendingSites: removeOneMatch(state.pendingSites, urlString),
+        sites: { ...state.sites, [url]: siteRuns },
+        urls: mergeUrlLists(state.urls, [{ url, rank2017 }]),
+        pendingUrls: removeOneMatch(state.pendingUrls, url),
       };
     }
     case ADD_SELECTED_URL: {
@@ -396,14 +384,14 @@ const selectPresetUrls = (presetName: PresetName): Action => ({
   payload: presetName,
 });
 
-const sitesRequest = (urlsString: string): Action => ({
-  type: SITES_REQUEST,
-  payload: urlsString,
+const siteRequest = (url: string): Action => ({
+  type: SITE_REQUEST,
+  payload: url,
 });
 
-const sitesSuccess = (siteRuns: SiteRun[][], urlString: string): Action => ({
-  type: SITES_SUCCESS,
-  payload: { sites: siteRuns, urlString },
+const siteSuccess = (siteRuns: SiteRun[], url: string): Action => ({
+  type: SITE_SUCCESS,
+  payload: { siteRuns, url },
 });
 
 const selectCollection = (collectionName: string): Action => ({
@@ -443,7 +431,7 @@ export const actions = {
   removeUrl,
   clearAllSelectedUrls,
   selectPresetUrls,
-  sitesSuccess,
+  siteSuccess,
   selectCollection,
   saveCollection,
   deleteCollection,
@@ -480,7 +468,7 @@ const viewingSavedCollection = (state: State): boolean =>
 
 const searching = (state: State): boolean => state.pendingSearches.length > 0;
 
-const loadingSites = (state: State): boolean => state.pendingSites.length > 0;
+const loadingSites = (state: State): boolean => state.pendingUrls.length > 0;
 
 export const selectors = {
   currentSites,
@@ -500,13 +488,13 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
     if (!urlsWithoutData.length) return;
 
     urlsWithoutData.forEach((url) => {
-      dispatch(sitesRequest(url));
+      dispatch(siteRequest(url));
       const urlId = url.replace(/\//g, "");
       const requestUrl = SITE_STORAGE_ROOT + urlId + ".json";
       return fetch(requestUrl)
         .then((res) => res.json())
         .then((siteRuns: SiteRun[]) => {
-          dispatch(sitesSuccess([siteRuns], url));
+          dispatch(siteSuccess(siteRuns, url));
         });
     });
   }, [dispatch, state.currentCollection.sites, state.sites]);
