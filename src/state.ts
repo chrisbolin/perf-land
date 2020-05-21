@@ -12,6 +12,7 @@ import colors from "colorkind/dist/12";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
+const SITE_STORAGE_ROOT = `https://storage.googleapis.com/perf-land/sites/011/`;
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
@@ -65,7 +66,7 @@ export const presets = {
 
 export type PresetName = keyof typeof presets;
 
-interface Site {
+interface SiteRun {
   url: string;
   cdn: string;
   startedDateTime: number;
@@ -90,7 +91,7 @@ interface Site {
   timeToInteractive: number;
 }
 
-export interface AugmentedSite extends Site {
+export interface AugmentedSite extends SiteRun {
   name: string;
   color: string;
 }
@@ -101,7 +102,7 @@ interface UrlDetails {
 }
 
 interface SitesMap {
-  [key: string]: Site;
+  [key: string]: SiteRun[];
 }
 
 interface CollectionSite {
@@ -217,7 +218,7 @@ interface SelectPresetAction {
 
 interface SitesSuccessAction {
   type: typeof SITES_SUCCESS;
-  payload: { sites: Site[]; urlString: string };
+  payload: { sites: SiteRun[][]; urlString: string };
 }
 
 interface SearchSuccessAction {
@@ -292,11 +293,11 @@ export const reducer = (state: State, action: Action): State => {
     }
     case SITES_SUCCESS: {
       const { sites, urlString } = action.payload;
-      const newSites = keyBy(sites, "url");
-      const newUrls = sites.map(({ url, rank2017 }) => ({
-        url,
-        rank2017,
-      }));
+      const newSites = keyBy(sites, "0.url");
+      const newUrls = sites.map((siteRuns) => {
+        const { url, rank2017 } = siteRuns[0]; // all runs sites have at least 1 run
+        return { url, rank2017 };
+      });
 
       return {
         ...state,
@@ -400,9 +401,9 @@ const sitesRequest = (urlsString: string): Action => ({
   payload: urlsString,
 });
 
-const sitesSuccess = (sites: Site[], urlString: string): Action => ({
+const sitesSuccess = (siteRuns: SiteRun[][], urlString: string): Action => ({
   type: SITES_SUCCESS,
-  payload: { sites, urlString },
+  payload: { sites: siteRuns, urlString },
 });
 
 const selectCollection = (collectionName: string): Action => ({
@@ -450,7 +451,7 @@ export const actions = {
 
 // selectors
 
-const augmentSite = (site: Site, index: number): AugmentedSite => {
+const augmentSite = (site: SiteRun, index: number): AugmentedSite => {
   let name = site.url
     .replace(/http.*:\/\//, "") // remove protocol
     .replace(/\/$/, ""); // remove trailing slash
@@ -470,7 +471,7 @@ const currentSites = (state: State): AugmentedSite[] =>
   state.currentCollection.sites
     .flatMap(({ url }) => {
       const site = state.sites[url];
-      return site ? [site] : [];
+      return site ? [site[0]] : [];
     })
     .map(augmentSite);
 
@@ -498,14 +499,16 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
 
     if (!urlsWithoutData.length) return;
 
-    const urlsString = urlsWithoutData.join(",");
-    const requestUrl = `${API_ROOT}?url=${urlsString}`;
-    dispatch(sitesRequest(urlsString));
-    fetch(requestUrl)
-      .then((res) => res.json())
-      .then((sites) => {
-        dispatch(sitesSuccess(sites, urlsString));
-      });
+    urlsWithoutData.forEach((url) => {
+      dispatch(sitesRequest(url));
+      const urlId = url.replace(/\//g, "");
+      const requestUrl = SITE_STORAGE_ROOT + urlId + ".json";
+      return fetch(requestUrl)
+        .then((res) => res.json())
+        .then((siteRuns: SiteRun[]) => {
+          dispatch(sitesSuccess([siteRuns], url));
+        });
+    });
   }, [dispatch, state.currentCollection.sites, state.sites]);
 };
 
