@@ -1,17 +1,10 @@
-import {
-  cloneDeep,
-  debounce,
-  keyBy,
-  orderBy,
-  pick,
-  omit,
-  unionBy,
-} from "lodash";
+import { cloneDeep, debounce, orderBy, pick, omit, unionBy } from "lodash";
 import { useEffect } from "react";
 import colors from "colorkind/dist/12";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
+const SITE_STORAGE_ROOT = `https://storage.googleapis.com/perf-land/sites/011/`;
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
@@ -65,7 +58,7 @@ export const presets = {
 
 export type PresetName = keyof typeof presets;
 
-interface Site {
+interface SiteRun {
   url: string;
   cdn: string;
   startedDateTime: number;
@@ -90,7 +83,7 @@ interface Site {
   timeToInteractive: number;
 }
 
-export interface AugmentedSite extends Site {
+export interface AugmentedSite extends SiteRun {
   name: string;
   color: string;
 }
@@ -101,7 +94,7 @@ interface UrlDetails {
 }
 
 interface SitesMap {
-  [key: string]: Site;
+  [key: string]: SiteRun[];
 }
 
 interface CollectionSite {
@@ -124,8 +117,8 @@ interface State {
   currentCollection: Collection;
   search: string;
   savedCollections: SavedCollections;
-  pendingSearches: string[];
-  pendingSites: string[];
+  pendingSearches: Set<string>;
+  pendingUrls: Set<string>;
 }
 
 const initialState: State = {
@@ -135,8 +128,8 @@ const initialState: State = {
   search: "",
   currentCollection: { name: "", sites: [] },
   savedCollections: {},
-  pendingSearches: [],
-  pendingSites: [],
+  pendingSearches: new Set(),
+  pendingUrls: new Set(),
 };
 
 const STATE_LOCAL_STORAGE_KEY = "userState";
@@ -171,8 +164,8 @@ export const initializeState = (): State => {
 
 // action types
 
-const SITES_REQUEST = "SITES_REQUEST";
-const SITES_SUCCESS = "SITES_SUCCESS";
+const SITE_REQUEST = "SITE_REQUEST";
+const SITE_SUCCESS = "SITE_SUCCESS";
 const SEARCH_CHANGE = "SEARCH_CHANGE";
 const SEARCH_REQUEST = "SEARCH_REQUEST";
 const SEARCH_SUCCESS = "SEARCH_SUCCESS";
@@ -202,7 +195,7 @@ interface StringAction {
     | typeof SEARCH_REQUEST
     | typeof SEARCH_CHANGE
     | typeof SEARCH_FAILURE
-    | typeof SITES_REQUEST
+    | typeof SITE_REQUEST
     | typeof SELECT_COLLECTION
     | typeof SAVE_COLLECTION
     | typeof DELETE_COLLECTION
@@ -216,8 +209,8 @@ interface SelectPresetAction {
 }
 
 interface SitesSuccessAction {
-  type: typeof SITES_SUCCESS;
-  payload: { sites: Site[]; urlString: string };
+  type: typeof SITE_SUCCESS;
+  payload: { siteRuns: SiteRun[]; url: string };
 }
 
 interface SearchSuccessAction {
@@ -241,15 +234,6 @@ const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
     return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
   });
 
-const removeOneMatch = (list: string[], item: string) => {
-  const listCopy = [...list];
-  const removeIndex = listCopy.indexOf(item);
-  if (removeIndex > -1) {
-    listCopy.splice(removeIndex, 1);
-  }
-  return listCopy;
-};
-
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case SEARCH_CHANGE: {
@@ -259,14 +243,17 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case SEARCH_REQUEST: {
+      const pendingSearches = new Set(state.pendingSearches);
+      pendingSearches.add(action.payload);
       return {
         ...state,
-        pendingSearches: [...state.pendingSearches, action.payload],
+        pendingSearches,
       };
     }
     case SEARCH_SUCCESS: {
       const { urlDetails, search } = action.payload;
-      const pendingSearches = removeOneMatch(state.pendingSearches, search);
+      const pendingSearches = new Set(state.pendingSearches);
+      pendingSearches.delete(search);
 
       return {
         ...state,
@@ -275,34 +262,32 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case SEARCH_FAILURE: {
-      const pendingSearches = removeOneMatch(
-        state.pendingSearches,
-        action.payload
-      );
+      const pendingSearches = new Set(state.pendingSearches);
+      pendingSearches.delete(action.payload);
       return {
         ...state,
         pendingSearches,
       };
     }
-    case SITES_REQUEST: {
+    case SITE_REQUEST: {
+      const pendingUrls = new Set(state.pendingUrls);
+      pendingUrls.add(action.payload);
       return {
         ...state,
-        pendingSites: [...state.pendingSites, action.payload],
+        pendingUrls,
       };
     }
-    case SITES_SUCCESS: {
-      const { sites, urlString } = action.payload;
-      const newSites = keyBy(sites, "url");
-      const newUrls = sites.map(({ url, rank2017 }) => ({
-        url,
-        rank2017,
-      }));
+    case SITE_SUCCESS: {
+      const { siteRuns, url } = action.payload;
+      const { rank2017 } = siteRuns[0]; // all runs sites have at least 1 run
+      const pendingUrls = new Set(state.pendingUrls);
+      pendingUrls.delete(url);
 
       return {
         ...state,
-        sites: { ...state.sites, ...newSites },
-        urls: mergeUrlLists(state.urls, newUrls),
-        pendingSites: removeOneMatch(state.pendingSites, urlString),
+        sites: { ...state.sites, [url]: siteRuns },
+        urls: mergeUrlLists(state.urls, [{ url, rank2017 }]),
+        pendingUrls,
       };
     }
     case ADD_SELECTED_URL: {
@@ -395,14 +380,14 @@ const selectPresetUrls = (presetName: PresetName): Action => ({
   payload: presetName,
 });
 
-const sitesRequest = (urlsString: string): Action => ({
-  type: SITES_REQUEST,
-  payload: urlsString,
+const siteRequest = (url: string): Action => ({
+  type: SITE_REQUEST,
+  payload: url,
 });
 
-const sitesSuccess = (sites: Site[], urlString: string): Action => ({
-  type: SITES_SUCCESS,
-  payload: { sites, urlString },
+const siteSuccess = (siteRuns: SiteRun[], url: string): Action => ({
+  type: SITE_SUCCESS,
+  payload: { siteRuns, url },
 });
 
 const selectCollection = (collectionName: string): Action => ({
@@ -442,7 +427,7 @@ export const actions = {
   removeUrl,
   clearAllSelectedUrls,
   selectPresetUrls,
-  sitesSuccess,
+  siteSuccess,
   selectCollection,
   saveCollection,
   deleteCollection,
@@ -450,7 +435,7 @@ export const actions = {
 
 // selectors
 
-const augmentSite = (site: Site, index: number): AugmentedSite => {
+const augmentSite = (site: SiteRun, index: number): AugmentedSite => {
   let name = site.url
     .replace(/http.*:\/\//, "") // remove protocol
     .replace(/\/$/, ""); // remove trailing slash
@@ -470,16 +455,16 @@ const currentSites = (state: State): AugmentedSite[] =>
   state.currentCollection.sites
     .flatMap(({ url }) => {
       const site = state.sites[url];
-      return site ? [site] : [];
+      return site ? [site[0]] : [];
     })
     .map(augmentSite);
 
 const viewingSavedCollection = (state: State): boolean =>
   !!state.savedCollections[state.currentCollection.name];
 
-const searching = (state: State): boolean => state.pendingSearches.length > 0;
+const searching = (state: State): boolean => state.pendingSearches.size > 0;
 
-const loadingSites = (state: State): boolean => state.pendingSites.length > 0;
+const loadingSites = (state: State): boolean => state.pendingUrls.size > 0;
 
 export const selectors = {
   currentSites,
@@ -494,19 +479,22 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
   useEffect(() => {
     const urlsWithoutData = state.currentCollection.sites
       .map(({ url }) => url)
-      .filter((url) => !state.sites[url]);
+      .filter((url) => !state.sites[url])
+      .filter((url) => !state.pendingUrls.has(url));
 
     if (!urlsWithoutData.length) return;
 
-    const urlsString = urlsWithoutData.join(",");
-    const requestUrl = `${API_ROOT}?url=${urlsString}`;
-    dispatch(sitesRequest(urlsString));
-    fetch(requestUrl)
-      .then((res) => res.json())
-      .then((sites) => {
-        dispatch(sitesSuccess(sites, urlsString));
-      });
-  }, [dispatch, state.currentCollection.sites, state.sites]);
+    urlsWithoutData.forEach((url) => {
+      dispatch(siteRequest(url));
+      const urlId = url.replace(/\//g, "");
+      const requestUrl = SITE_STORAGE_ROOT + urlId + ".json";
+      return fetch(requestUrl)
+        .then((res) => res.json())
+        .then((siteRuns: SiteRun[]) => {
+          dispatch(siteSuccess(siteRuns, url));
+        });
+    });
+  }, [dispatch, state.currentCollection.sites, state.sites, state.pendingUrls]);
 };
 
 const usePersistState = (state: State) => {
@@ -531,6 +519,7 @@ const searchForUrls = (
   });
 
   if (search.length < MIN_SEARCH_STRING_LENGTH) return;
+  if (state.pendingSearches.has(search)) return; // don't search for the same string again
 
   const found = state.urls.filter(({ url }) => url.includes(search));
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
