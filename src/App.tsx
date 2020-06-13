@@ -260,8 +260,7 @@ function App() {
           <div className="text">
             <p>
               explore the world of web performance and compare thousands of
-              websites. made with :love: by{" "}
-              <a href="https://formidable.com">Formidable</a>.
+              websites.
             </p>
           </div>
         </div>
@@ -271,8 +270,7 @@ function App() {
             perf land is currently in the <strong>alpha</strong> stage. If there
             are features you'd like to see or bugs you'd like to tell us about,
             check out the{" "}
-            <a href="https://github.com/FormidableLabs/perf-land">repository</a>
-            .
+            <a href="https://github.com/chrisbolin/perf-land">repository</a>.
           </p>
           <p>
             There are over 600,000 sites are available here. The underlying data
@@ -522,9 +520,7 @@ function App() {
         </table>
       </div>
       <div className="footer">
-        <p>
-          &copy; 2020 <a href="https://formidable.com">Formidable</a>
-        </p>
+        <p>&copy; 2020</p>
       </div>
     </div>
   );
