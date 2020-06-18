@@ -508,6 +508,21 @@ const debounceSearchNetworkRequest = debounce(
   DEBOUNCE_SEARCH_TIME_MS
 );
 
+function fetchSearchResults(
+  search: string,
+  onSuccess: (a: UrlDetails[]) => void,
+  onError: (a: Error) => void
+) {
+  const requestUrl = `${API_ROOT}?search2=${search}`;
+
+  debounceSearchNetworkRequest(() =>
+    fetch(requestUrl)
+      .then((res) => res.json())
+      .then(onSuccess)
+      .catch(onError)
+  );
+}
+
 const searchForUrls = (
   state: State,
   dispatch: React.Dispatch<Action>,
@@ -524,19 +539,18 @@ const searchForUrls = (
   const found = state.urls.filter(({ url }) => url.includes(search));
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
-  const requestUrl = `${API_ROOT}?search2=${search}`;
-
   debounceSearchNetworkRequest(() => {
     dispatch(searchRequest(search));
-    return fetch(requestUrl)
-      .then((res) => res.json())
-      .then((urlDetails) => {
+    fetchSearchResults(
+      search,
+      (urlDetails) => {
         dispatch(searchSuccess(search, urlDetails));
-      })
-      .catch((error) => {
+      },
+      (error) => {
         console.error(error);
         dispatch(searchFailure(search));
-      });
+      }
+    );
   });
 };
 
