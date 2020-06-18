@@ -1,1 +1,0 @@
-gsutil cors set ./cloud/storage/cors.json gs://perf-land
