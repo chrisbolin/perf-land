@@ -25,3 +25,20 @@ export function objectsApiUrl(search: string, maxResults = 20): string {
   const fullPrefix = encodeURIComponent(SITES_PATH + "/" + search);
   return `${OBJECTS_API_URL}?prefix=${fullPrefix}&maxResults=${maxResults}`;
 }
+
+export function removePath(url: string): string {
+  const match = url.match(/[a-zA-Z0-9]\//);
+  if (match && match.index) {
+    return url.substring(0, match.index + 1);
+  }
+  return url;
+}
+
+export function searchPrefixes(search: string): string[] {
+  let correctedSearch = removePath(search);
+
+  // search already prefixes protocol, just return it
+  if (correctedSearch.startsWith("http")) return [correctedSearch];
+
+  return ["http://" + correctedSearch, "https://" + correctedSearch];
+}
