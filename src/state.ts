@@ -1,10 +1,10 @@
 import { cloneDeep, debounce, orderBy, pick, omit, unionBy } from "lodash";
 import { useEffect } from "react";
 import colors from "colorkind/dist/12";
+import { urlToStorageUrl } from "./api";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
-const SITE_STORAGE_ROOT = `https://storage.googleapis.com/perf-land/sites/011/`;
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
@@ -486,9 +486,7 @@ const useSelectedSites = (state: State, dispatch: React.Dispatch<Action>) => {
 
     urlsWithoutData.forEach((url) => {
       dispatch(siteRequest(url));
-      const urlId = url.replace(/\//g, "");
-      const requestUrl = SITE_STORAGE_ROOT + urlId + ".json";
-      return fetch(requestUrl)
+      return fetch(urlToStorageUrl(url))
         .then((res) => res.json())
         .then((siteRuns: SiteRun[]) => {
           dispatch(siteSuccess(siteRuns, url));

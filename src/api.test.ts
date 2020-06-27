@@ -1,7 +1,18 @@
-import { BUCKET_ROOT_URL } from "./api";
+import { urlToId, urlToStorageUrl } from "./api";
 
-describe("BUCKET_ROOT_URL", () => {
-  it("is secure", () => {
-    BUCKET_ROOT_URL.startsWith("https");
+const AOL_URL = "https://www.aol.com/";
+
+describe("urlToId", () => {
+  it("converts a URL to an ID", () => {
+    const aolId = "https:www.aol.com";
+    expect(urlToId(AOL_URL)).toBe(aolId);
+  });
+});
+
+describe("urlToStorageUrl", () => {
+  it("converts a URL to its storage location URL", () => {
+    const aolStorageUrl =
+      "https://storage.googleapis.com/perf-land/sites/011/https:www.aol.com.json";
+    expect(urlToStorageUrl(AOL_URL)).toBe(aolStorageUrl);
   });
 });
