@@ -6,7 +6,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
-    "@types/jest": "^25.2.1",
+    "@types/jest": "^26.0.3",
     "@types/lodash": "^4.14.150",
     "@types/node": "^13.13.4",
     "@types/papaparse": "^5.0.3",
@@ -55,7 +55,8 @@
   "devDependencies": {
     "knex": "^0.21.1",
     "mysql": "^2.18.1",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.1"
   },
   "prettier": {}
 }
