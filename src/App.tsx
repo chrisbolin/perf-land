@@ -7,6 +7,7 @@ import {
   VictoryAxis,
   VictoryLabel,
 } from "victory";
+import styled from "styled-components/macro";
 
 import {
   AugmentedSite,
@@ -19,6 +20,9 @@ import {
   effects,
   MIN_SEARCH_STRING_LENGTH,
 } from "./state";
+
+import Heading from "./components/Heading";
+import Hero from "./components/Hero";
 import "./App.css";
 
 declare global {
@@ -225,6 +229,11 @@ const urlSelectStyles = {
   }),
 };
 
+const Wrapper = styled.div`
+  padding: ${(props) => props.theme.spacing(10)}
+    ${(props) => props.theme.spacing(6)} 0;
+`;
+
 function App() {
   const [state, dispatch] = useReducer(reducer, undefined, initializeState);
 
@@ -253,42 +262,11 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <div className="Hero">
-        <div className="Title">
-          <h1>perf land</h1>
-          <div className="text">
-            <p>
-              explore the world of web performance and compare thousands of
-              websites.
-            </p>
-          </div>
-        </div>
-        <div className="About">
-          <h2 id="about">about</h2>
-          <p>
-            perf land is currently in the <strong>alpha</strong> stage. If there
-            are features you'd like to see or bugs you'd like to tell us about,
-            check out the{" "}
-            <a href="https://github.com/chrisbolin/perf-land">repository</a>.
-          </p>
-          <p>
-            There are over 600,000 sites are available here. The underlying data
-            is from the HTTP Archive, a public and free resource.
-          </p>
-          <p>
-            The performance tests are run from a private instance of WebPageTest
-            located in Redwood City, California. If you'd like to learn more
-            about the tests,{" "}
-            <a href="https://httparchive.org/faq#how-is-the-data-gathered">
-              head to the HTTP Archive
-            </a>
-            .
-          </p>
-        </div>
-      </div>
-
-      <h2>websites</h2>
+    <Wrapper>
+      <Hero />
+      <Heading as="h2" size="large">
+        Websites
+      </Heading>
 
       <h3>preset collections</h3>
       <div className="BtnWrapper">
@@ -522,7 +500,7 @@ function App() {
       <div className="footer">
         <p>&copy; 2020</p>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 
