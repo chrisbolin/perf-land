@@ -40,17 +40,17 @@ const Hero = () => {
         <Heading as="h2" size="medium" id="about">
           about
         </Heading>
-        <Text size="small">
+        <Text>
           perf land is currently in the <strong>alpha</strong> stage. If there
           are features you'd like to see or bugs you'd like to tell us about,
           check out the{" "}
           <a href="https://github.com/chrisbolin/perf-land">repository</a>.
         </Text>
-        <Text size="small">
+        <Text>
           There are over 600,000 sites are available here. The underlying data
           is from the HTTP Archive, a public and free resource.
         </Text>
-        <Text size="small">
+        <Text>
           The performance tests are run from a private instance of WebPageTest
           located in Redwood City, California. If you'd like to learn more about
           the tests,{" "}

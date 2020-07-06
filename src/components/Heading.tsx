@@ -6,17 +6,15 @@ interface HeadingProps {
   as?: any;
   children: any;
   id?: string;
-  size?: "medium" | "large" | "xlarge";
+  size?: "small" | "medium" | "large" | "xlarge";
   theme?: Theme;
 }
 
-const getSizeStyles = (size?: "medium" | "large" | "xlarge") => {
+const getSizeStyles = (size?: "small" | "medium" | "large" | "xlarge") => {
   switch (size) {
     case "xlarge":
       // h1
       return css`
-        margin: 0;
-
         font-size: 3.5rem;
         font-weight: 800;
         text-transform: uppercase;
@@ -24,12 +22,16 @@ const getSizeStyles = (size?: "medium" | "large" | "xlarge") => {
     case "large":
       // h2
       return css`
-        margin: 4rem 0 0;
-
         font-size: 1.5rem;
         font-weight: 600;
         letter-spacing: 0.187em;
         text-transform: uppercase;
+      `;
+    case "small":
+      return css`
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.5;
       `;
     default:
     case "medium":
@@ -43,18 +45,18 @@ const getSizeStyles = (size?: "medium" | "large" | "xlarge") => {
   }
 };
 
-const StyledHeading = styled.span<{ size?: "medium" | "large" | "xlarge" }>`
-  ${(props) => getSizeStyles(props.size)};
-
+const StyledHeading = styled.span<{
+  size?: "small" | "medium" | "large" | "xlarge";
+}>`
   font-family: ${(props) => props.theme.fonts.heading};
   line-height: 1;
+
+  ${(props) => getSizeStyles(props.size)};
 `;
 
 const Heading: React.FunctionComponent<HeadingProps> = ({
   children,
   ...props
-}: {
-  children: any;
 }) => {
   return <StyledHeading {...props}>{children}</StyledHeading>;
 };

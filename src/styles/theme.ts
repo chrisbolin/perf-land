@@ -7,13 +7,21 @@ const breakpoints = {
 };
 
 const colors = {
+  // Neutrals
   nearBlack: "#000f08",
+  darkTan: "#6a6358",
+  tan: "#dad2c5",
+  lightTan: "#F2ECE1",
+  white: "#ffffff",
+
+  // Accent
   mint: "#b4f2e0",
+  // Selection Background
   yellow: "#f9f98a",
 };
 
 const fonts = {
-  body: `'IBM Plex Mono', monospace`,
+  body: `'IBM Plex Mono', Inconsolata, monospace`,
   heading: `"Syne", sans-serif`,
 };
 
@@ -25,4 +33,5 @@ const theme: DefaultTheme = {
 };
 
 export type Theme = typeof theme;
+export type ThemeColors = typeof colors;
 export default theme;

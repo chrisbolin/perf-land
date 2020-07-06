@@ -32,6 +32,13 @@ const normalize = css`
   p {
     margin: 1.2em 0 0 0;
   }
+
+  ul,
+  li {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
 `;
 
 const fonts = css`
