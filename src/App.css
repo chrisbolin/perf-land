@@ -5,21 +5,6 @@
   margin: 1rem 0 0 0;
 }
 
-.Chart {
-  flex: 1 0 300px;
-  margin: 2rem 2rem 0 0;
-  max-width: 400px;
-  padding: 1rem 1.5rem;
-
-  background-color: #fff;
-  border-radius: 1.25em;
-}
-
-.Chart-title {
-  font-size: 1rem;
-  font-weight: 800;
-}
-
 /* classes */
 
 .columns {
