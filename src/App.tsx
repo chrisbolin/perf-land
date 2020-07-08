@@ -18,12 +18,10 @@ import Chart from "./components/Chart";
 import Collections from "./components/Collections";
 import Heading from "./components/Heading";
 import Hero from "./components/Hero";
+import SavedCollectionButtons from "./components/SavedCollectionButtons";
 import Sidebar from "./components/Sidebar";
 import SiteDetailsTable from "./components/SiteDetailsTable";
 import StyledSelect from "./components/StyledSelect";
-
-import "./App.css";
-import SavedCollectionButtons from "./components/SavedCollectionButtons";
 
 declare global {
   interface Window {
@@ -64,6 +62,18 @@ const ContentHeader = styled.div`
   justify-content: space-between;
 
   padding-right: ${(props) => props.theme.spacing(1.5)};
+`;
+
+const Charts = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+`;
+
+const Footer = styled.footer`
+  text-align: center;
+  margin: ${(props) => props.theme.spacing(8)} 0;
 `;
 
 function App() {
@@ -244,7 +254,7 @@ function App() {
               </div>
             ) : null}
           </ContentHeader>
-          <div className="columns">
+          <Charts>
             <Chart
               sites={currentSites}
               name="Time to first byte (ms)"
@@ -321,15 +331,15 @@ function App() {
               field="reqTotal"
               highlightedUrl={highlightedUrl}
             />
-          </div>
+          </Charts>
         </Content>
       </Layout>
 
       <SiteDetailsTable sites={currentSites} />
 
-      <div className="footer">
+      <Footer>
         <p>&copy; 2020</p>
-      </div>
+      </Footer>
     </React.Fragment>
   );
 }

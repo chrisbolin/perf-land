@@ -3,7 +3,9 @@ import styled from "styled-components/macro";
 
 import { AugmentedSite } from "../state";
 
-const Wrapper = styled.div``;
+const Wrapper = styled.div`
+  margin-top: ${(props) => props.theme.spacing(2)};
+`;
 
 function SiteDetail({ site }: { site: AugmentedSite }) {
   return (
