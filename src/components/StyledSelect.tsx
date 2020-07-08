@@ -18,7 +18,9 @@ const styles = {
     ...provided,
     "&:hover": { borderColor: theme.colors.nearBlack },
     backgroundColor: theme.colors.white,
-    borderColor: state.isFocused ? theme.colors.nearBlack : theme.colors.tan,
+    borderColor: state.isFocused
+      ? theme.colors.nearBlack
+      : theme.colors.neutral,
     borderRadius: 0,
     borderStyle: "solid",
     borderWidth: "1px",
@@ -54,7 +56,7 @@ const styles = {
     return {
       ...provided,
       borderRadius: 0,
-      border: `1px solid ${theme.colors.tan}`,
+      border: `1px solid ${theme.colors.neutral}`,
       boxShadow: "none",
       padding: 0,
     };
@@ -64,7 +66,9 @@ const styles = {
     return {
       ...provided,
       backgroundColor: state.isFocused ? theme.colors.mint : theme.colors.white,
-      color: state.isFocused ? theme.colors.nearBlack : theme.colors.darkTan,
+      color: state.isFocused
+        ? theme.colors.nearBlack
+        : theme.colors.darkNeutral,
       padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
       width: `100%`,
     };

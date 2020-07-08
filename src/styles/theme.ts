@@ -9,9 +9,10 @@ const breakpoints = {
 const colors = {
   // Neutrals
   nearBlack: "#000f08",
-  darkTan: "#6a6358",
-  tan: "#dad2c5",
-  lightTan: "#F2ECE1",
+  darkNeutral: "#6a6358",
+  neutral: "#dad2c5",
+  lightNeutral: "#F2ECE1",
+  lighterNeutral: "#F7F4ED",
   white: "#ffffff",
 
   // Accent

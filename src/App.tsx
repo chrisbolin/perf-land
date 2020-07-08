@@ -23,6 +23,7 @@ import SiteDetailsTable from "./components/SiteDetailsTable";
 import StyledSelect from "./components/StyledSelect";
 
 import "./App.css";
+import SavedCollectionButtons from "./components/SavedCollectionButtons";
 
 declare global {
   interface Window {
@@ -48,7 +49,7 @@ const Layout = styled.div`
   padding-top: ${(props) => props.theme.spacing(4)};
   padding-bottom: ${(props) => props.theme.spacing(8)};
 
-  background-color: ${(props) => props.theme.colors.lightTan};
+  background-color: ${(props) => props.theme.colors.lightNeutral};
 `;
 
 const Content = styled.div`
@@ -61,6 +62,8 @@ const ContentHeader = styled.div`
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
+
+  padding-right: ${(props) => props.theme.spacing(1.5)};
 `;
 
 function App() {
@@ -149,27 +152,17 @@ function App() {
                       : `no results for "${inputValue}"`
                   }
                 />
+                <SavedCollectionButtons
+                  onSave={() => promptAndSaveCollection()}
+                  onDelete={() =>
+                    dispatch(
+                      actions.deleteCollection(state.currentCollection.name)
+                    )
+                  }
+                />
               </React.Fragment>
             }
           />
-          {viewingSavedCollection ? (
-            <React.Fragment>
-              <br />
-              <Button onClick={() => promptAndSaveCollection()}>
-                update "{state.currentCollection.name}"
-              </Button>
-              <br />
-              <Button
-                onClick={() =>
-                  dispatch(
-                    actions.deleteCollection(state.currentCollection.name)
-                  )
-                }
-              >
-                delete "{state.currentCollection.name}"
-              </Button>
-            </React.Fragment>
-          ) : null}
           <Heading as="h3" size="small">
             Examples
           </Heading>
@@ -231,22 +224,23 @@ function App() {
             <Heading as="h2" size="large">
               {state.currentCollection.name
                 ? state.currentCollection.name
-                : "[click something on the left]"}{" "}
+                : "[Click an example!]"}{" "}
               {/* TODO: If it's modified & unsaved, add '*' */}
             </Heading>
             {hasUrls ? (
               <div>
+                {viewingSavedCollection ? null : (
+                  <Button white onClick={() => promptAndSaveCollection()}>
+                    Save to My Stuff
+                  </Button>
+                )}
+                &nbsp;
                 <Button
+                  white
                   onClick={() => dispatch(actions.clearAllSelectedUrls())}
                 >
                   Clear All
                 </Button>
-                &nbsp;
-                {viewingSavedCollection ? null : (
-                  <Button onClick={() => promptAndSaveCollection()}>
-                    Save to My Stuff
-                  </Button>
-                )}
               </div>
             ) : null}
           </ContentHeader>

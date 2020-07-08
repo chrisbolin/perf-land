@@ -10,9 +10,10 @@ declare module "styled-components/macro" {
 
     colors: {
       nearBlack: string;
-      darkTan: string;
-      tan: string;
-      lightTan: string;
+      darkNeutral: string;
+      neutral: string;
+      lightNeutral: string;
+      lighterNeutral: string;
       white: string;
       mint: string;
       yellow: string;

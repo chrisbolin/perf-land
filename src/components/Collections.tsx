@@ -52,8 +52,8 @@ const Collections = ({
   }
   return (
     <Wrapper>
-      <Text as="span" color="darkTan">
-        Save the current sites
+      <Text as="span" color="darkNeutral">
+        When you save the current list of sites, they will appear here!
       </Text>
     </Wrapper>
   );
