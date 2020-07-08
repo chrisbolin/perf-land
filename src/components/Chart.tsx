@@ -67,6 +67,18 @@ function ChartNoMemo({
 
   const brushDomainStart = data.findIndex((site) => site.isHighlighted);
 
+  const labelStyles = {
+    fontFamily: "inherit",
+    fontSize: 16,
+  };
+
+  const DOMAIN_PADDING = 20;
+  const AXIS_HEIGHT = 20;
+  const BAR_HEIGHT = 10;
+  const LABELLED_BAR_HEIGHT = BAR_HEIGHT + 32;
+  const CHART_HEIGHT =
+    DOMAIN_PADDING * 2 + AXIS_HEIGHT + data.length * LABELLED_BAR_HEIGHT;
+
   return (
     <Wrapper>
       <Heading as="span" size="small">
@@ -74,9 +86,9 @@ function ChartNoMemo({
       </Heading>
       <VictoryChart
         width={360}
-        height={data.length * 60}
-        domainPadding={20}
-        padding={{ top: 20, right: 20, bottom: 50, left: 1 }}
+        height={CHART_HEIGHT}
+        domainPadding={{ x: DOMAIN_PADDING }}
+        padding={{ top: 20, right: 20, bottom: 30, left: 20 }}
         containerComponent={
           <VictoryBrushContainer
             allowDrag={false}
@@ -98,7 +110,7 @@ function ChartNoMemo({
         <VictoryBar
           horizontal
           data={data}
-          barWidth={10}
+          barWidth={BAR_HEIGHT}
           style={{
             data: {
               fill: ({ datum }) => datum.color,
@@ -110,18 +122,34 @@ function ChartNoMemo({
           style={{
             axis: { stroke: "#000", strokeWidth: 1 },
             grid: { stroke: "#fff" },
+            tickLabels: labelStyles,
+          }}
+          tickFormat={(t) => {
+            if (t > 999) {
+              return `${t / 1000}k`;
+            }
+            return t;
           }}
         />
         <VictoryAxis
           style={{
             axis: { stroke: "#ff0000", strokeWidth: 0 },
+            tickLabels: labelStyles,
           }}
           tickFormat={(t, index) => {
             const isHighlighted = data[index].isHighlighted;
-            return isHighlighted ? `${t} 🔍` : `${t}`;
+            return isHighlighted ? `🔍${t}` : `${t}`;
           }}
           tickLabelComponent={
-            <VictoryLabel textAnchor="start" dy={-15} dx={14} />
+            <VictoryLabel
+              textAnchor="start"
+              dy={-15}
+              dx={(t) => {
+                // @ts-ignore
+                const isHighlighted = data[t.index].isHighlighted;
+                return isHighlighted ? -6 : 10;
+              }}
+            />
           }
         />
       </VictoryChart>
