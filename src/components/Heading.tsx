@@ -6,14 +6,12 @@ interface HeadingProps {
 const getSizeStyles = (size?: "small" | "medium" | "large" | "xlarge") => {
   switch (size) {
     case "xlarge":
-      // h1
       return css`
         font-size: 3.5rem;
         font-weight: 800;
         text-transform: uppercase;
       `;
     case "large":
-      // h2
       return css`
         font-size: 1.5rem;
         font-weight: 600;
@@ -28,7 +26,6 @@ const getSizeStyles = (size?: "small" | "medium" | "large" | "xlarge") => {
       `;
     default:
     case "medium":
-      // h3
       return css`
         font-size: 1.25rem;
         font-weight: 600;

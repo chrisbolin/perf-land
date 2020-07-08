@@ -22,7 +22,6 @@ const About = styled.div`
   max-width: 45ch;
   padding-top: ${(props) => props.theme.spacing(4)};
 `;
-// padding-left: ${(props) => props.theme.spacing(8)};
 
 const Hero = () => {
   return (
