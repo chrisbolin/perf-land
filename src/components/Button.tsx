@@ -23,11 +23,19 @@ const whiteStyles = css`
   &:hover {
     box-shadow: 0 0 0 1px ${(props) => props.theme.colors.nearBlack};
   }
+
+  &:active {
+    background-color: ${(props) => props.theme.colors.lightNeutral};
+  }
 `;
 
 const Wrapper = styled.button<ButtonProps>`
   &:focus {
     outline: 2px dotted ${(props) => props.theme.colors.nearBlack};
+  }
+
+  &:active {
+    color: ${(props) => props.theme.colors.darkNeutral};
   }
 
   ${(props) => props.white && whiteStyles};
