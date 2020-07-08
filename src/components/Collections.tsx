@@ -8,6 +8,7 @@ const Wrapper = styled.div``;
 const List = styled.ul``;
 
 const ListItem = styled.li<{ isActive: boolean }>`
+  margin-top: ${(props) => props.theme.spacing(0.5)};
   margin-left: ${(props) => props.theme.spacing(-2)};
   padding-left: ${(props) => props.theme.spacing(1.5)};
 

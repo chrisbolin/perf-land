@@ -1,14 +1,9 @@
-import React from "react";
 import styled, { css } from "styled-components/macro";
-import { Theme, ThemeColors } from "../styles/theme";
+import { ThemeColors } from "../styles/theme";
 
 interface TextProps {
-  as?: any;
-  children: any;
-  color?: keyof ThemeColors | string;
-  id?: string;
+  color?: keyof ThemeColors;
   size?: "small" | "medium" | "large";
-  theme?: Theme;
 }
 
 const getSizeStyles = (size?: "small" | "medium" | "large") => {
@@ -32,13 +27,10 @@ const getSizeStyles = (size?: "small" | "medium" | "large") => {
   }
 };
 
-const StyledText = styled.p.withConfig({
+const Text = styled.p.withConfig({
   // do not pass 'color' to DOM
-  shouldForwardProp: (prop, defaultValidatorFn) => !["color"].includes(prop),
-})<{
-  color?: keyof ThemeColors;
-  size?: "small" | "medium" | "large";
-}>`
+  shouldForwardProp: (prop) => !["color"].includes(prop),
+})<TextProps>`
   ${(props) => getSizeStyles(props.size)};
 
   ${(props) => {
@@ -53,14 +45,5 @@ const StyledText = styled.p.withConfig({
   font-family: ${(props) => props.theme.fonts.body};
   line-height: 1.5;
 `;
-
-const Text: React.FunctionComponent<TextProps> = ({
-  children,
-  ...props
-}: {
-  children: any;
-}) => {
-  return <StyledText {...props}>{children}</StyledText>;
-};
 
 export default Text;

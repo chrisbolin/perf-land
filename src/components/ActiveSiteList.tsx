@@ -5,14 +5,26 @@ import Button from "./Button";
 import Text from "./Text";
 
 const List = styled.ul`
+  margin-top: ${(props) => props.theme.spacing(0.5)};
   margin-left: ${(props) => props.theme.spacing(1.5)};
 `;
 
-const Icon = styled.span`
+const Icon = styled.span<{ isVisible: Boolean }>`
+  visibility: ${(props) => (props.isVisible ? `visible` : `hidden`)};
   margin-left: ${(props) => props.theme.spacing(-2)};
+  width: ${(props) => props.theme.spacing(2)};
 
   font-size: 0.9rem;
   line-height: 1;
+`;
+
+const StyledText = styled(Text)`
+  margin-top: ${(props) => props.theme.spacing(0.5)};
+
+  &:hover ${Icon} {
+    visibility: visible;
+    opacity: 0.5;
+  }
 `;
 
 const ActiveSiteList = ({
@@ -39,14 +51,17 @@ const ActiveSiteList = ({
             ? () => onClickRemoveHighlight()
             : () => onClickHighlight(site.url);
           return (
-            <Text key={`${site.url}-${index}`} as="li" size="small">
+            <StyledText key={`${site.url}-${index}`} as="li" size="small">
               <Button onClick={toggleHighlight}>
-                {isHighlighted ? (
-                  // eslint-disable-next-line jsx-a11y/accessible-emoji
-                  <Icon role="img" aria-label="Highlight">
-                    🔍
-                  </Icon>
-                ) : null}
+                {/* eslint-disable-next-line jsx-a11y/accessible-emoji */}
+                <Icon
+                  role="img"
+                  aria-label={isHighlighted ? "Active" : "Highlight"}
+                  isVisible={isHighlighted}
+                >
+                  🔍
+                </Icon>
+
                 {site.name}
               </Button>
               <Button
@@ -55,7 +70,7 @@ const ActiveSiteList = ({
               >
                 <span aria-hidden="true">×</span>
               </Button>
-            </Text>
+            </StyledText>
           );
         })}
       </List>

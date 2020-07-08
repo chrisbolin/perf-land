@@ -1,13 +1,6 @@
-import React from "react";
 import styled, { css } from "styled-components/macro";
-import { Theme } from "../styles/theme";
-
 interface HeadingProps {
-  as?: any;
-  children: any;
-  id?: string;
   size?: "small" | "medium" | "large" | "xlarge";
-  theme?: Theme;
 }
 
 const getSizeStyles = (size?: "small" | "medium" | "large" | "xlarge") => {
@@ -45,20 +38,11 @@ const getSizeStyles = (size?: "small" | "medium" | "large" | "xlarge") => {
   }
 };
 
-const StyledHeading = styled.span<{
-  size?: "small" | "medium" | "large" | "xlarge";
-}>`
+const Heading = styled.span<HeadingProps>`
   font-family: ${(props) => props.theme.fonts.heading};
   line-height: 1;
 
   ${(props) => getSizeStyles(props.size)};
 `;
-
-const Heading: React.FunctionComponent<HeadingProps> = ({
-  children,
-  ...props
-}) => {
-  return <StyledHeading {...props}>{children}</StyledHeading>;
-};
 
 export default Heading;
