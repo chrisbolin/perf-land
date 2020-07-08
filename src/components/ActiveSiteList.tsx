@@ -9,6 +9,8 @@ const List = styled.ul`
   margin-left: ${(props) => props.theme.spacing(1.5)};
 `;
 
+const StyledButton = styled(Button)``;
+
 const Icon = styled.span<{ isVisible: Boolean }>`
   visibility: ${(props) => (props.isVisible ? `visible` : `hidden`)};
   margin-left: ${(props) => props.theme.spacing(-2)};
@@ -21,7 +23,7 @@ const Icon = styled.span<{ isVisible: Boolean }>`
 const StyledText = styled(Text)`
   margin-top: ${(props) => props.theme.spacing(0.5)};
 
-  &:hover ${Icon} {
+  ${StyledButton}:focus ${Icon}, &:hover ${Icon} {
     visibility: visible;
     opacity: 0.5;
   }
@@ -52,18 +54,14 @@ const ActiveSiteList = ({
             : () => onClickHighlight(site.url);
           return (
             <StyledText key={`${site.url}-${index}`} as="li" size="small">
-              <Button onClick={toggleHighlight}>
+              <StyledButton onClick={toggleHighlight}>
                 {/* eslint-disable-next-line jsx-a11y/accessible-emoji */}
-                <Icon
-                  role="img"
-                  aria-label={isHighlighted ? "Active" : "Highlight"}
-                  isVisible={isHighlighted}
-                >
+                <Icon role="img" aria-hidden="true" isVisible={isHighlighted}>
                   🔍
                 </Icon>
 
                 {site.name}
-              </Button>
+              </StyledButton>
               <Button
                 onClick={() => onClickRemove(site.url)}
                 aria-label="Remove"
