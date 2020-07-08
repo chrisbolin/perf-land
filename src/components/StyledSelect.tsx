@@ -32,6 +32,7 @@ const styles = {
     ...provided,
     fontFamily: "inherit",
     padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+    "&:hover": { cursor: "text" },
   }),
   // Down arrow
   // indicatorsContainer: (provided: Object) => ({

@@ -4,7 +4,7 @@ import styled, { css } from "styled-components/macro";
 type EventCallbackFunction = (event: React.SyntheticEvent) => void;
 
 interface ButtonProps {
-  children: any;
+  children?: any;
   onClick?: EventCallbackFunction;
   white?: Boolean;
 }
@@ -30,6 +30,10 @@ const whiteStyles = css`
 `;
 
 const Wrapper = styled.button<ButtonProps>`
+  &:hover {
+    cursor: pointer;
+  }
+
   &:focus {
     outline: 2px dotted ${(props) => props.theme.colors.nearBlack};
   }
@@ -44,14 +48,15 @@ const Wrapper = styled.button<ButtonProps>`
 const Button: React.FunctionComponent<ButtonProps> = ({
   children,
   ...props
-}: {
-  children: any;
 }) => {
-  return (
-    <Wrapper type="button" {...props}>
-      {children}
-    </Wrapper>
-  );
+  if (children) {
+    return (
+      <Wrapper type="button" {...props}>
+        {children}
+      </Wrapper>
+    );
+  }
+  return <Wrapper type="button" {...props} />;
 };
 
 export default Button;

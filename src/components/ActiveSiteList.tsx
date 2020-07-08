@@ -9,7 +9,7 @@ const List = styled.ul`
   margin-left: ${(props) => props.theme.spacing(1.5)};
 `;
 
-const StyledButton = styled(Button)``;
+const HighlightButton = styled(Button)``;
 
 const Icon = styled.span<{ isVisible: Boolean }>`
   visibility: ${(props) => (props.isVisible ? `visible` : `hidden`)};
@@ -22,10 +22,39 @@ const Icon = styled.span<{ isVisible: Boolean }>`
 
 const StyledText = styled(Text)`
   margin-top: ${(props) => props.theme.spacing(0.5)};
+  position: relative;
 
-  ${StyledButton}:focus ${Icon}, &:hover ${Icon} {
+  ${HighlightButton}:focus ${Icon}, &:hover ${Icon} {
     visibility: visible;
     opacity: 0.5;
+  }
+`;
+
+const RemoveButton = styled(Button)`
+  height: 1rem;
+  width: 1rem;
+  position: absolute;
+  top: 2px;
+
+  margin-left: ${(props) => props.theme.spacing(0.5)};
+
+  border-radius: 2rem;
+  border: 1px solid ${(props) => props.theme.colors.neutral};
+  background-color: ${(props) => props.theme.colors.neutral};
+  color: ${(props) => props.theme.colors.nearBlack};
+
+  &:after {
+    content: "×";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+  }
+
+  &:focus,
+  &:hover {
+    background-color: ${(props) => props.theme.colors.lightNeutral};
   }
 `;
 
@@ -54,20 +83,18 @@ const ActiveSiteList = ({
             : () => onClickHighlight(site.url);
           return (
             <StyledText key={`${site.url}-${index}`} as="li" size="small">
-              <StyledButton onClick={toggleHighlight}>
+              <HighlightButton onClick={toggleHighlight}>
                 {/* eslint-disable-next-line jsx-a11y/accessible-emoji */}
                 <Icon role="img" aria-hidden="true" isVisible={isHighlighted}>
                   🔍
                 </Icon>
 
                 {site.name}
-              </StyledButton>
-              <Button
+              </HighlightButton>
+              <RemoveButton
                 onClick={() => onClickRemove(site.url)}
                 aria-label="Remove"
-              >
-                <span aria-hidden="true">×</span>
-              </Button>
+              />
             </StyledText>
           );
         })}
