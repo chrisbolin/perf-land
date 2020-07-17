@@ -2,6 +2,7 @@ import { cloneDeep, debounce, pick, omit, union } from "lodash";
 import { useEffect } from "react";
 import colors from "colorkind/dist/12";
 import { urlToStorageUrl } from "./api";
+import { search } from "./api/search";
 
 const API_ROOT =
   "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
@@ -225,6 +226,7 @@ type Action =
 const mergeUrlLists = (listA: string[], listB: string[]) => union(listA, listB);
 
 export const reducer = (state: State, action: Action): State => {
+  console.log(action.type, state);
   switch (action.type) {
     case SEARCH_CHANGE: {
       return {
@@ -496,17 +498,12 @@ const debounceSearchNetworkRequest = debounce(
 );
 
 function fetchSearchResults(
-  search: string,
-  onSuccess: (a: { url: string }[]) => void,
-  onError: (a: Error) => void
+  searchTerm: string,
+  onSuccess: (urls: string[]) => void,
+  onError: (error: Error) => void
 ) {
-  const requestUrl = `${API_ROOT}?search2=${search}`;
-
   debounceSearchNetworkRequest(() =>
-    fetch(requestUrl)
-      .then((res) => res.json())
-      .then(onSuccess)
-      .catch(onError)
+    search(searchTerm).then(onSuccess).catch(onError)
   );
 }
 
@@ -530,13 +527,8 @@ const searchForUrls = (
     dispatch(searchRequest(search));
     fetchSearchResults(
       search,
-      (urlDetails) => {
-        dispatch(
-          searchSuccess(
-            search,
-            urlDetails.map(({ url }) => url)
-          )
-        );
+      (urls) => {
+        dispatch(searchSuccess(search, urls));
       },
       (error) => {
         console.error(error);
