@@ -393,7 +393,7 @@ function App() {
 
             <Select
               className="UrlSelect"
-              options={state.urls.map(({ url }) => ({
+              options={state.urls.map((url) => ({
                 value: url,
                 label: url,
               }))}
