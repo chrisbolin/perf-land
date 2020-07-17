@@ -1,11 +1,9 @@
 import { cloneDeep, debounce, pick, omit, union } from "lodash";
 import { useEffect } from "react";
 import colors from "colorkind/dist/12";
-import { urlToStorageUrl } from "./api";
+import { urlToStorageUrl } from "./api/utils";
 import { search } from "./api/search";
 
-const API_ROOT =
-  "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;

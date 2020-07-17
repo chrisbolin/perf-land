@@ -1,10 +1,10 @@
-const {
+import {
   searchUrls,
   objectsApiUrl,
   allSearchPossibilities,
   removePath,
   search,
-} = require("./search");
+} from "./search";
 
 beforeAll(() => {
   // polyfill

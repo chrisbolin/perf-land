@@ -1,11 +1,9 @@
-const { digest } = require("./digest");
+import { digest } from "./digest";
 
 describe("digest", () => {
   it("handles results without items", () => {
-    const data = {
-      kind: "storage#objects",
-    };
-    const results = [];
+    const data = {};
+    const results: string[] = [];
     expect(digest(data)).toEqual(results);
   });
 
