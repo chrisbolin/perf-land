@@ -1,10 +1,9 @@
-import { cloneDeep, debounce, orderBy, pick, omit, unionBy } from "lodash";
+import { cloneDeep, debounce, pick, omit, union } from "lodash";
 import { useEffect } from "react";
 import colors from "colorkind/dist/12";
-import { urlToStorageUrl } from "./api";
+import { urlToStorageUrl } from "./api/utils";
+import { search } from "./api/search";
 
-const API_ROOT =
-  "https://us-central1-web-performance-273818.cloudfunctions.net/function-1";
 const SEARCH_RESULTS_COUNT_THRESHOLD = 5;
 export const MIN_SEARCH_STRING_LENGTH = 5;
 const DEBOUNCE_SEARCH_TIME_MS = 150;
@@ -88,11 +87,6 @@ export interface AugmentedSite extends SiteRun {
   color: string;
 }
 
-interface UrlDetails {
-  url: string;
-  rank2017: number;
-}
-
 interface SitesMap {
   [key: string]: SiteRun[];
 }
@@ -113,7 +107,7 @@ interface SavedCollections {
 interface State {
   highlightedUrl: string;
   sites: SitesMap;
-  urls: UrlDetails[];
+  urls: string[];
   currentCollection: Collection;
   search: string;
   savedCollections: SavedCollections;
@@ -215,7 +209,7 @@ interface SitesSuccessAction {
 
 interface SearchSuccessAction {
   type: typeof SEARCH_SUCCESS;
-  payload: { urlDetails: UrlDetails[]; search: string };
+  payload: { urls: string[]; search: string };
 }
 
 type Action =
@@ -227,14 +221,10 @@ type Action =
 
 // reducer
 
-const mergeUrlLists = (listA: UrlDetails[], listB: UrlDetails[]) =>
-  orderBy(unionBy(listA, listB, "url"), ({ url, rank2017 }) => {
-    const httpPenalty = url.startsWith("http://") ? 1 : 0;
-    const lengthPenalty = url.length / 255;
-    return rank2017 + 0.5 * httpPenalty + 0.5 * lengthPenalty;
-  });
+const mergeUrlLists = (listA: string[], listB: string[]) => union(listA, listB);
 
 export const reducer = (state: State, action: Action): State => {
+  console.log(action.type, state);
   switch (action.type) {
     case SEARCH_CHANGE: {
       return {
@@ -251,13 +241,13 @@ export const reducer = (state: State, action: Action): State => {
       };
     }
     case SEARCH_SUCCESS: {
-      const { urlDetails, search } = action.payload;
+      const { urls, search } = action.payload;
       const pendingSearches = new Set(state.pendingSearches);
       pendingSearches.delete(search);
 
       return {
         ...state,
-        urls: mergeUrlLists(state.urls, urlDetails),
+        urls: mergeUrlLists(state.urls, urls),
         pendingSearches,
       };
     }
@@ -279,14 +269,13 @@ export const reducer = (state: State, action: Action): State => {
     }
     case SITE_SUCCESS: {
       const { siteRuns, url } = action.payload;
-      const { rank2017 } = siteRuns[0]; // all runs sites have at least 1 run
       const pendingUrls = new Set(state.pendingUrls);
       pendingUrls.delete(url);
 
       return {
         ...state,
         sites: { ...state.sites, [url]: siteRuns },
-        urls: mergeUrlLists(state.urls, [{ url, rank2017 }]),
+        urls: mergeUrlLists(state.urls, [url]),
         pendingUrls,
       };
     }
@@ -415,9 +404,9 @@ const searchFailure = (search: string): Action => ({
   payload: search,
 });
 
-const searchSuccess = (search: string, urlDetails: UrlDetails[]): Action => ({
+const searchSuccess = (search: string, urls: string[]): Action => ({
   type: SEARCH_SUCCESS,
-  payload: { urlDetails, search },
+  payload: { urls, search },
 });
 
 export const actions = {
@@ -507,17 +496,12 @@ const debounceSearchNetworkRequest = debounce(
 );
 
 function fetchSearchResults(
-  search: string,
-  onSuccess: (a: UrlDetails[]) => void,
-  onError: (a: Error) => void
+  searchTerm: string,
+  onSuccess: (urls: string[]) => void,
+  onError: (error: Error) => void
 ) {
-  const requestUrl = `${API_ROOT}?search2=${search}`;
-
   debounceSearchNetworkRequest(() =>
-    fetch(requestUrl)
-      .then((res) => res.json())
-      .then(onSuccess)
-      .catch(onError)
+    search(searchTerm).then(onSuccess).catch(onError)
   );
 }
 
@@ -534,15 +518,15 @@ const searchForUrls = (
   if (search.length < MIN_SEARCH_STRING_LENGTH) return;
   if (state.pendingSearches.has(search)) return; // don't search for the same string again
 
-  const found = state.urls.filter(({ url }) => url.includes(search));
+  const found = state.urls.filter((url) => url.includes(search));
   if (found.length > SEARCH_RESULTS_COUNT_THRESHOLD) return;
 
   debounceSearchNetworkRequest(() => {
     dispatch(searchRequest(search));
     fetchSearchResults(
       search,
-      (urlDetails) => {
-        dispatch(searchSuccess(search, urlDetails));
+      (urls) => {
+        dispatch(searchSuccess(search, urls));
       },
       (error) => {
         console.error(error);

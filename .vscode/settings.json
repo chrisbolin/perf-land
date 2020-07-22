@@ -3,6 +3,7 @@
     "Lavalle",
     "colorkind",
     "contentful",
+    "esnext",
     "ttfb"
   ],
   "editor.formatOnSave": true
