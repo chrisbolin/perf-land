@@ -1,14 +1,9 @@
 import React, { memo } from "react";
 import styled from "styled-components/macro";
-import {
-  VictoryBar,
-  VictoryBrushContainer,
-  VictoryChart,
-  VictoryAxis,
-  VictoryLabel,
-} from "victory";
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 
 import Heading from "./Heading";
+import theme from "../styles/theme";
 import { AugmentedSite } from "../state";
 
 type IdentityFunction = (x: number) => number;
@@ -65,17 +60,16 @@ function ChartNoMemo({
     // standard sort: ascending; reverse: descending
     .sort((a, b) => (a.y - b.y) * (reverse ? 1 : -1));
 
-  const brushDomainStart = data.findIndex((site) => site.isHighlighted);
-
   const labelStyles = {
+    fill: theme.colors.darkNeutral,
     fontFamily: "inherit",
     fontSize: 16,
   };
 
   const DOMAIN_PADDING = 20;
   const AXIS_HEIGHT = 20;
-  const BAR_HEIGHT = 10;
-  const LABELLED_BAR_HEIGHT = BAR_HEIGHT + 32;
+  const BAR_HEIGHT = 4;
+  const LABELLED_BAR_HEIGHT = BAR_HEIGHT + 40;
   const CHART_HEIGHT =
     DOMAIN_PADDING * 2 + AXIS_HEIGHT + data.length * LABELLED_BAR_HEIGHT;
 
@@ -89,23 +83,6 @@ function ChartNoMemo({
         height={CHART_HEIGHT}
         domainPadding={{ x: DOMAIN_PADDING }}
         padding={{ top: 20, right: 20, bottom: 30, left: 20 }}
-        containerComponent={
-          <VictoryBrushContainer
-            allowDrag={false}
-            allowResize={false}
-            brushDimension="x"
-            brushDomain={{
-              x:
-                brushDomainStart >= 0
-                  ? [brushDomainStart + 0.6, brushDomainStart + 1.75]
-                  : [0, 0],
-            }}
-            brushStyle={{
-              fill: "#feeb5c",
-              fillOpacity: 0.1,
-            }}
-          />
-        }
       >
         <VictoryBar
           horizontal
@@ -120,7 +97,7 @@ function ChartNoMemo({
         <VictoryAxis
           dependentAxis
           style={{
-            axis: { stroke: "#000", strokeWidth: 1 },
+            axis: { stroke: theme.colors.darkNeutral, strokeWidth: 1 },
             grid: { stroke: "#fff" },
             tickLabels: labelStyles,
           }}
@@ -133,21 +110,31 @@ function ChartNoMemo({
         />
         <VictoryAxis
           style={{
-            axis: { stroke: "#ff0000", strokeWidth: 0 },
-            tickLabels: labelStyles,
+            axis: { stroke: "#fff", strokeWidth: 0 },
+            tickLabels: {
+              ...labelStyles,
+              fill: (t) => {
+                const isHighlighted = data[t.index].isHighlighted;
+                return isHighlighted
+                  ? theme.colors.nearBlack
+                  : theme.colors.darkNeutral;
+              },
+            },
           }}
           tickFormat={(t, index) => {
             const isHighlighted = data[index].isHighlighted;
-            return isHighlighted ? `🔍${t}` : `${t}`;
+            const isWinner = index === data.length - 1;
+            const withTrophy = isWinner ? `${t} 🏆` : `${t}`;
+            return isHighlighted ? `⭐️ ${withTrophy}` : `${withTrophy}`;
           }}
           tickLabelComponent={
             <VictoryLabel
               textAnchor="start"
-              dy={-15}
+              dy={-16}
               dx={(t) => {
                 // @ts-ignore
                 const isHighlighted = data[t.index].isHighlighted;
-                return isHighlighted ? -6 : 10;
+                return isHighlighted ? -9 : 10;
               }}
             />
           }

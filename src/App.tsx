@@ -104,6 +104,7 @@ function App() {
   };
 
   const hasUrls = !!urls.length;
+  const hasName = !!state.currentCollection.name;
 
   return (
     <React.Fragment>
@@ -122,7 +123,7 @@ function App() {
             onClick={(name: string) => dispatch(actions.selectCollection(name))}
             activeSites={
               <React.Fragment>
-                {hasUrls && loadingSites ? <LoadingSites /> : null}
+                {loadingSites ? <LoadingSites /> : null}
                 <ActiveSiteList
                   hasUrls={hasUrls}
                   highlightedUrl={highlightedUrl}
@@ -184,7 +185,7 @@ function App() {
             }
             activeSites={
               <React.Fragment>
-                {hasUrls && loadingSites ? <LoadingSites /> : null}
+                {loadingSites ? <LoadingSites /> : null}
                 <ActiveSiteList
                   hasUrls={hasUrls}
                   highlightedUrl={highlightedUrl}
@@ -227,14 +228,39 @@ function App() {
               </React.Fragment>
             }
           />
+          {!hasName ? (
+            <StyledSelect
+              options={state.urls.map(({ url }) => ({
+                value: url,
+                label: url,
+              }))}
+              onChange={(option) => {
+                if (!option || "length" in option) return;
+                dispatch(actions.addUrl(option.value));
+              }}
+              onInputChange={(input: string) => {
+                effects.searchForUrls(state, dispatch, input);
+              }}
+              inputValue={state.search}
+              placeholder="Add website..."
+              value={null}
+              isLoading={searching}
+              loadingMessage={({ inputValue }) =>
+                `searching for "${inputValue}"...`
+              }
+              noOptionsMessage={({ inputValue }) =>
+                inputValue.length < MIN_SEARCH_STRING_LENGTH
+                  ? "please be more specific"
+                  : `no results for "${inputValue}"`
+              }
+            />
+          ) : null}
         </Sidebar>
 
         <Content>
           <ContentHeader>
             <Heading as="h2" size="large">
-              {state.currentCollection.name
-                ? state.currentCollection.name
-                : "[Click an example!]"}{" "}
+              {hasName ? state.currentCollection.name : "Temporary list"}
               {/* TODO: If it's modified & unsaved, add '*' */}
             </Heading>
             {hasUrls ? (

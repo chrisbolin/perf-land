@@ -1,8 +1,9 @@
 import styled, { css } from "styled-components/macro";
-import { ThemeColors } from "../styles/theme";
+// import { ThemeColors } from "../styles/theme";
 
 interface TextProps {
-  color?: keyof ThemeColors;
+  // TODO: color?: keyof ThemeColors | string;
+  color?: any;
   size?: "small" | "medium" | "large";
 }
 

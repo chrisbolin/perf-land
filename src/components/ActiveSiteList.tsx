@@ -86,7 +86,7 @@ const ActiveSiteList = ({
               <HighlightButton onClick={toggleHighlight}>
                 {/* eslint-disable-next-line jsx-a11y/accessible-emoji */}
                 <Icon role="img" aria-hidden="true" isVisible={isHighlighted}>
-                  🔍
+                  ⭐️
                 </Icon>
 
                 {site.name}
