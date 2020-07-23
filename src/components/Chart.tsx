@@ -9,6 +9,10 @@ import { AugmentedSite } from "../state";
 type IdentityFunction = (x: number) => number;
 
 const Wrapper = styled.div`
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+
   flex: 1 0 300px;
   margin: ${(props) => props.theme.spacing(1.5)}
     ${(props) => props.theme.spacing(1.5)} 0 0;
@@ -83,6 +87,7 @@ function ChartNoMemo({
         height={CHART_HEIGHT}
         domainPadding={{ x: DOMAIN_PADDING }}
         padding={{ top: 20, right: 20, bottom: 30, left: 20 }}
+        style={{ parent: { height: "auto" } }}
       >
         <VictoryBar
           horizontal
