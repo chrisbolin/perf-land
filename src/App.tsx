@@ -174,6 +174,33 @@ function App() {
               </React.Fragment>
             }
           />
+          {!hasName ? (
+            <StyledSelect
+              options={state.urls.map(({ url }) => ({
+                value: url,
+                label: url,
+              }))}
+              onChange={(option) => {
+                if (!option || "length" in option) return;
+                dispatch(actions.addUrl(option.value));
+              }}
+              onInputChange={(input: string) => {
+                effects.searchForUrls(state, dispatch, input);
+              }}
+              inputValue={state.search}
+              placeholder="Add website..."
+              value={null}
+              isLoading={searching}
+              loadingMessage={({ inputValue }) =>
+                `searching for "${inputValue}"...`
+              }
+              noOptionsMessage={({ inputValue }) =>
+                inputValue.length < MIN_SEARCH_STRING_LENGTH
+                  ? "please be more specific"
+                  : `no results for "${inputValue}"`
+              }
+            />
+          ) : null}
           <Heading as="h3" size="small">
             Examples
           </Heading>
@@ -228,33 +255,6 @@ function App() {
               </React.Fragment>
             }
           />
-          {!hasName ? (
-            <StyledSelect
-              options={state.urls.map(({ url }) => ({
-                value: url,
-                label: url,
-              }))}
-              onChange={(option) => {
-                if (!option || "length" in option) return;
-                dispatch(actions.addUrl(option.value));
-              }}
-              onInputChange={(input: string) => {
-                effects.searchForUrls(state, dispatch, input);
-              }}
-              inputValue={state.search}
-              placeholder="Add website..."
-              value={null}
-              isLoading={searching}
-              loadingMessage={({ inputValue }) =>
-                `searching for "${inputValue}"...`
-              }
-              noOptionsMessage={({ inputValue }) =>
-                inputValue.length < MIN_SEARCH_STRING_LENGTH
-                  ? "please be more specific"
-                  : `no results for "${inputValue}"`
-              }
-            />
-          ) : null}
         </Sidebar>
 
         <Content>
