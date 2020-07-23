@@ -115,7 +115,7 @@ function App() {
       <Layout>
         <Sidebar>
           <Heading as="h3" size="small">
-            My Stuff
+            My Lists
           </Heading>
           <Collections
             activeCollection={state.currentCollection.name}
