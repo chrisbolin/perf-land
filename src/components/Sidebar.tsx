@@ -8,8 +8,14 @@ const Wrapper = styled.div`
     ${(props) => props.theme.spacing(4)};
 `;
 
-const Sidebar = ({ children }: { children: any }) => {
-  return <Wrapper>{children}</Wrapper>;
+const Sidebar = ({
+  children,
+  className,
+}: {
+  children: any;
+  className?: string;
+}) => {
+  return <Wrapper className={className}>{children}</Wrapper>;
 };
 
 export default Sidebar;

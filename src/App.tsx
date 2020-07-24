@@ -22,6 +22,7 @@ import SavedCollectionButtons from "./components/SavedCollectionButtons";
 import Sidebar from "./components/Sidebar";
 import SiteDetailsTable from "./components/SiteDetailsTable";
 import StyledSelect from "./components/StyledSelect";
+import { mobile } from "./styles";
 
 declare global {
   interface Window {
@@ -39,6 +40,13 @@ const Wrapper = styled.div`
 `;
 
 const Layout = styled.div`
+  ${mobile`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(1, [row] auto);
+    padding: ${(props: any) => props.theme.spacing(2)};
+  `};
+
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -50,7 +58,22 @@ const Layout = styled.div`
   background-color: ${(props) => props.theme.colors.lightNeutral};
 `;
 
+const StyledSidebar = styled(Sidebar)`
+  ${mobile`
+    grid-column: 1 / span 2;
+		grid-row: row;
+    z-index: 20;
+  
+    transform: translateX(-100%);
+  `};
+  background-color: ${(props) => props.theme.colors.lightNeutral};
+`;
+
 const Content = styled.div`
+  ${mobile`
+    grid-column: 1 / span 2;
+		grid-row: row;
+  `};
   flex: 1 1 auto;
 `;
 
@@ -113,7 +136,7 @@ function App() {
       </Wrapper>
 
       <Layout>
-        <Sidebar>
+        <StyledSidebar>
           <Heading as="h3" size="small">
             My Lists
           </Heading>
@@ -255,7 +278,7 @@ function App() {
               </React.Fragment>
             }
           />
-        </Sidebar>
+        </StyledSidebar>
 
         <Content>
           <ContentHeader>
@@ -361,7 +384,7 @@ function App() {
         </Content>
       </Layout>
 
-      <SiteDetailsTable sites={currentSites} />
+      {/* <SiteDetailsTable sites={currentSites} /> */}
 
       <Footer>
         <p>&copy; 2020</p>

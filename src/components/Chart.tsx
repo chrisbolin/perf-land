@@ -5,10 +5,16 @@ import { VictoryBar, VictoryChart, VictoryAxis, VictoryLabel } from "victory";
 import Heading from "./Heading";
 import theme from "../styles/theme";
 import { AugmentedSite } from "../state";
+import { mobile } from "../styles";
 
 type IdentityFunction = (x: number) => number;
 
 const Wrapper = styled.div`
+  ${mobile`
+    flex: 1 1 300px;
+    margin: ${(props: any) => props.theme.spacing(1.5)} 0 0 0;
+  `};
+
   display: inline-flex;
   flex-direction: column;
   justify-content: space-between;
