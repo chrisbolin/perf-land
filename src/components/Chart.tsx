@@ -24,6 +24,11 @@ const Wrapper = styled.div`
   border-radius: ${(props) => props.theme.spacing(2.5)};
 `;
 
+const Icon = styled.tspan`
+  font-size: 16px;
+  line-height: 1;
+`;
+
 function ChartNoMemo({
   sites,
   field,
@@ -77,6 +82,57 @@ function ChartNoMemo({
   const CHART_HEIGHT =
     DOMAIN_PADDING * 2 + AXIS_HEIGHT + data.length * LABELLED_BAR_HEIGHT;
 
+  const LabelWithEmoji = ({
+    x,
+    y,
+    index,
+    text,
+  }: {
+    x: number;
+    y: number;
+    index: number;
+    text: string;
+  }) => {
+    const isHighlighted = data[index].isHighlighted;
+    const isWinner = index === data.length - 1;
+
+    const star = isHighlighted ? (
+      <Icon role="img" aria-hidden="true">
+        ⭐️
+        <tspan x={9.5}>&nbsp;</tspan>
+      </Icon>
+    ) : null;
+    const trophy = isWinner ? (
+      <Icon role="img" aria-hidden="true">
+        <tspan dx={-6}>&nbsp;</tspan>
+        🏆
+      </Icon>
+    ) : null;
+
+    const dy = y - 12;
+    const dx = isHighlighted ? x - 9 : x + 10;
+
+    const fill = isHighlighted
+      ? theme.colors.nearBlack
+      : theme.colors.darkNeutral;
+    return (
+      <text
+        x={dx}
+        y={dy}
+        style={{
+          ...labelStyles,
+          fill: fill,
+          letterSpacing: "normal",
+          padding: 10,
+        }}
+      >
+        {star}
+        {text}
+        {trophy}
+      </text>
+    );
+  };
+
   return (
     <Wrapper>
       <Heading as="span" size="small">
@@ -116,33 +172,9 @@ function ChartNoMemo({
         <VictoryAxis
           style={{
             axis: { stroke: "#fff", strokeWidth: 0 },
-            tickLabels: {
-              ...labelStyles,
-              fill: (t) => {
-                const isHighlighted = data[t.index].isHighlighted;
-                return isHighlighted
-                  ? theme.colors.nearBlack
-                  : theme.colors.darkNeutral;
-              },
-            },
           }}
-          tickFormat={(t, index) => {
-            const isHighlighted = data[index].isHighlighted;
-            const isWinner = index === data.length - 1;
-            const withTrophy = isWinner ? `${t} 🏆` : `${t}`;
-            return isHighlighted ? `⭐️ ${withTrophy}` : `${withTrophy}`;
-          }}
-          tickLabelComponent={
-            <VictoryLabel
-              textAnchor="start"
-              dy={-16}
-              dx={(t) => {
-                // @ts-ignore
-                const isHighlighted = data[t.index].isHighlighted;
-                return isHighlighted ? -9 : 10;
-              }}
-            />
-          }
+          //@ts-ignore Victory passes its props
+          tickLabelComponent={<LabelWithEmoji />}
         />
       </VictoryChart>
     </Wrapper>

@@ -12,9 +12,10 @@ const List = styled.ul`
 const HighlightButton = styled(Button)``;
 
 const Icon = styled.span<{ isVisible: Boolean }>`
-  visibility: ${(props) => (props.isVisible ? `visible` : `hidden`)};
+  display: inline-block;
   margin-left: ${(props) => props.theme.spacing(-2)};
   width: ${(props) => props.theme.spacing(2)};
+  visibility: ${(props) => (props.isVisible ? `visible` : `hidden`)};
 
   font-size: 0.9rem;
   line-height: 1;
