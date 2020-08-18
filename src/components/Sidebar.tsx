@@ -1,6 +1,9 @@
+/// <reference path="../react-aria-modal.d.ts" />
 import React, { FunctionComponent, useState } from "react";
 import styled from "styled-components/macro";
 import Modal from "react-aria-modal";
+
+import { mobile, tablet } from "../styles";
 
 const Wrapper = styled.div`
   flex: 0 0 ${(props) => props.theme.spacing(30)};
@@ -8,11 +11,18 @@ const Wrapper = styled.div`
     ${(props) => props.theme.spacing(2)} ${(props) => props.theme.spacing(2)}
     ${(props) => props.theme.spacing(4)};
 
-  /* transform: translateX(0%); */
   border: 1px solid blue;
 `;
 
-const MobileWrapper = styled.div``;
+const HideOnMobile = styled.div`
+  ${mobile`display: none;`};
+  ${tablet`display: block;`};
+`;
+
+const Mobile = styled.div`
+  ${mobile`display: block;`};
+  ${tablet`display: none;`};
+`;
 
 const Sidebar: FunctionComponent<{
   children: any;
@@ -26,9 +36,22 @@ const Sidebar: FunctionComponent<{
   const handleOpen = () => setOpen(true);
 
   return (
-    <Modal onExit={handleClose} getApplicationNode={getApplicationNode}>
-      <Wrapper className={className}>{children}</Wrapper>
-    </Modal>
+    <React.Fragment>
+      {isOpen ? (
+        <Mobile>
+          <Modal
+            titleText="test"
+            onExit={handleClose}
+            getApplicationNode={getApplicationNode}
+          >
+            <Wrapper className={className}>{children}</Wrapper>
+          </Modal>
+        </Mobile>
+      ) : null}
+      <HideOnMobile>
+        <Wrapper className={className}>{children}</Wrapper>
+      </HideOnMobile>
+    </React.Fragment>
   );
 };
 
