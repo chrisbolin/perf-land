@@ -72,8 +72,7 @@ export default createGlobalStyle`
   ${fonts};
 
   html {
-    background-color: ${theme.colors.mint};
-    background-image: linear-gradient(180deg, ${theme.colors.mint} 50%, ${theme.colors.lightNeutral} 51%);
+    background-color: ${theme.colors.lightNeutral};
     color: ${theme.colors.nearBlack};
     font-size: 14px;
 

@@ -9,6 +9,11 @@ const Wrapper = styled.div`
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
+
+  padding: ${(props) => props.theme.spacing(10)}
+    ${(props) => props.theme.spacing(6)} ${(props) => props.theme.spacing(16)};
+
+  background-color: ${(props) => props.theme.colors.mint};
 `;
 
 const Title = styled.div`

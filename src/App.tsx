@@ -34,10 +34,7 @@ function LoadingSites() {
   return <div>loading...</div>;
 }
 
-const Wrapper = styled.div`
-  padding: ${(props) => props.theme.spacing(10)}
-    ${(props) => props.theme.spacing(6)} 0;
-`;
+const Wrapper = styled.div``;
 
 const Layout = styled.div`
   ${mobile`
@@ -51,7 +48,6 @@ const Layout = styled.div`
   flex-direction: row;
   flex-wrap: nowrap;
 
-  margin-top: ${(props) => props.theme.spacing(16)};
   padding-top: ${(props) => props.theme.spacing(4)};
   padding-bottom: ${(props) => props.theme.spacing(8)};
 
@@ -63,9 +59,8 @@ const StyledSidebar = styled(Sidebar)`
     grid-column: 1 / span 2;
 		grid-row: row;
     z-index: 20;
-  
-    transform: translateX(-100%);
   `};
+
   background-color: ${(props) => props.theme.colors.lightNeutral};
 `;
 
@@ -130,10 +125,8 @@ function App() {
   const hasName = !!state.currentCollection.name;
 
   return (
-    <React.Fragment>
-      <Wrapper>
-        <Hero />
-      </Wrapper>
+    <Wrapper>
+      <Hero />
 
       <Layout>
         <StyledSidebar>
@@ -389,7 +382,7 @@ function App() {
       <Footer>
         <p>&copy; 2020</p>
       </Footer>
-    </React.Fragment>
+    </Wrapper>
   );
 }
 
