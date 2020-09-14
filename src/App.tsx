@@ -520,7 +520,11 @@ function App() {
         </table>
       </div>
       <div className="footer">
-        <p>&copy; 2020</p>
+        <p>
+          &copy; 2020 Perf Land. Created by{" "}
+          <a href="https://chris.bolin.co">Chris Bolin</a>. UI design by{" "}
+          <a href="http://www.paulalavalle.com">Paula Lavalle</a>.
+        </p>
       </div>
     </div>
   );
