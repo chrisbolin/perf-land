@@ -253,3 +253,12 @@ th {
   text-align: center;
   margin: 4em 0;
 }
+
+/* be right back */
+.brb {
+  border: 2px solid #000f08;
+  padding: 2em;
+  margin: 4em auto;
+  max-width: 800px;
+  text-align: center;
+}
