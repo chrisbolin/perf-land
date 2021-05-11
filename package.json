@@ -16,7 +16,7 @@
     "@types/victory": "^33.1.4",
     "colorkind": "^0.4.0",
     "fast-csv": "^4.1.3",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "papaparse": "^5.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
